@@ -1,5 +1,31 @@
 # ⚙️ 6. Backend Design (ออกแบบหลังบ้าน)
 
+> หมายเหตุ: เว็บทดสอบเลือกใช้ `Next.js API Routes` แทน backend แยกเพื่อความเร็วในการพัฒนา
+
+## 6.0 Test/MVP Backend (Next.js API Routes)
+
+```
+frontend/
+└── app/
+    └── api/
+        ├── auth/
+        │   ├── login/route.ts
+        │   ├── register/route.ts
+        │   └── logout/route.ts
+        ├── products/
+        │   ├── route.ts
+        │   └── [slug]/route.ts
+        ├── cart/
+        │   └── items/route.ts
+        ├── orders/
+        │   ├── route.ts
+        │   └── [id]/route.ts
+        └── payments/
+            └── intent/route.ts
+```
+
+หมายเหตุ: โครงสร้าง Express ด้านล่างเก็บไว้เป็นทางเลือก หากต้องการแยก backend ในอนาคต
+
 ## 6.1 Project Structure
 
 ```

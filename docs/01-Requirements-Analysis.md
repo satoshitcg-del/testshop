@@ -50,6 +50,24 @@
 
 ---
 
+## 1.2.1 Test/MVP Scope (สำหรับเว็บทดสอบ)
+
+### In Scope (ทำแน่)
+- สมัคร/เข้าสู่ระบบด้วยอีเมล
+- ค้นหา/ดูรายการสินค้า + รายละเอียดสินค้า
+- เพิ่ม/ลบ/แก้ไข ตะกร้าสินค้า
+- Checkout แบบทดสอบ (Mock หรือ Stripe Test Mode)
+- ดูประวัติคำสั่งซื้อของตัวเอง
+
+### Out of Scope (ตัดออกก่อน)
+- Social login (Google/Facebook/Line)
+- Chat/Real-time (Socket)
+- Coupon/Promotion
+- Multi-seller (เริ่มต้นร้านเดียว)
+- Admin Dashboard เต็มรูปแบบ
+
+---
+
 ## 1.3 Non-Functional Requirements
 
 | หมวดหมู่ | ความต้องการ |
@@ -77,7 +95,7 @@
 ### Backend
 | ส่วน | เทคโนโลยี | เหตุผล |
 |-----|----------|--------|
-| API | Next.js API Routes / tRPC | Type-safe API |
+| API | Next.js API Routes | ง่ายต่อการทำเว็บทดสอบ |
 | Database | PostgreSQL + Prisma | Relational DB with ORM |
 | Cache | Redis | Session, Cart, Rate Limiting |
 | Search | Algolia / Meilisearch | Full-text Search |

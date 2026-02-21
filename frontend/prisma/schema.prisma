@@ -1,0 +1,100 @@
+﻿// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  fullName     String   @map("full_name")
+  role         UserRole @default(CUSTOMER)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  carts  Cart[]
+  orders Order[]
+
+  @@map("users")
+}
+
+model Product {
+  id            String   @id @default(uuid())
+  name          String
+  slug          String   @unique
+  description   String   @db.Text
+  price         Decimal  @db.Decimal(10, 2)
+  stockQuantity Int      @default(0) @map("stock_quantity")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id          String  @id @default(uuid())
+  cartId      String  @map("cart_id")
+  productId   String  @map("product_id")
+  quantity    Int
+  priceAtTime Decimal @map("price_at_time") @db.Decimal(10, 2)
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+  @@map("cart_items")
+}
+
+model Order {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  status        String   @default("PENDING")
+  paymentStatus String   @default("PENDING") @map("payment_status")
+  subtotal      Decimal  @db.Decimal(10, 2)
+  totalAmount   Decimal  @map("total_amount") @db.Decimal(10, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user  User       @relation(fields: [userId], references: [id])
+  items OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String  @id @default(uuid())
+  orderId     String  @map("order_id")
+  productId   String  @map("product_id")
+  productName String  @map("product_name")
+  price       Decimal @db.Decimal(10, 2)
+  quantity    Int
+  subtotal    Decimal @db.Decimal(10, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}

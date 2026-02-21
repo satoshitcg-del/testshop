@@ -51,6 +51,31 @@ https://api.yourshop.com/v1
 
 ---
 
+## 4.1.1 Minimal API for Test/MVP
+
+### ใช้จริงในเว็บทดสอบ
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/logout`
+- `GET /products`
+- `GET /products/:slug`
+- `GET /cart`
+- `POST /cart/items`
+- `PATCH /cart/items/:id`
+- `DELETE /cart/items/:id`
+- `POST /orders`
+- `GET /orders`
+- `GET /orders/:id`
+- `POST /payments/intent` (Test mode เท่านั้น)
+
+### ตัดออกก่อน
+- Social login (`/auth/social/*`)
+- WebSocket events
+- Coupon endpoints
+- Admin/Seller APIs เต็มรูปแบบ
+
+---
+
 ### 👤 User Endpoints
 
 | Method | Endpoint | Description | Auth |

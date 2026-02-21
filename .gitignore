@@ -1,0 +1,7 @@
+﻿.npm-cache/
+node_modules/
+.next/
+frontend/.env
+frontend/.env.local
+frontend/prisma/dev.db
+frontend/prisma/dev.db-journal

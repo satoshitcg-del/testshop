@@ -438,3 +438,21 @@ psql $DATABASE_URL < backup_YYYYMMDD.sql
 # Or via CLI
 vercel --rollback
 ```
+
+---
+
+## 8.14 Test/Preview Environment (สำหรับเว็บทดสอบ)
+
+### Payment (Test Mode เท่านั้น)
+- ใช้ Stripe Test Keys (`pk_test_...`, `sk_test_...`)
+- ห้ามใช้ live keys ในเว็บทดสอบ
+
+### Database สำหรับทดสอบ
+- ใช้ Supabase หรือ Postgres local
+- แนะนำสร้าง DB แยกสำหรับ test
+
+### Quick Smoke Tests
+- สมัคร/เข้าสู่ระบบได้
+- โหลด `/products` ได้
+- เพิ่มสินค้าเข้าตะกร้าได้
+- Checkout แบบทดสอบได้

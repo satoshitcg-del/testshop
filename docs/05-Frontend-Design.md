@@ -1,5 +1,7 @@
 # 🎨 5. Frontend Design (ออกแบบหน้าบ้าน)
 
+> หมายเหตุ: สำหรับเว็บทดสอบ ให้โฟกัสเฉพาะ Customer flow เท่านั้น (Seller/Admin เป็น optional ภายหลัง)
+
 ## 5.1 Project Structure (Next.js App Router)
 
 ```
@@ -217,6 +219,17 @@ frontend/
   ├── OrderItems      // รายการสินค้า
   └── OrderActions    // ชำระเงิน/ติดตาม/ยกเลิก
 ```
+
+---
+
+## 5.2.1 Test/MVP Pages (ใช้จริงในเว็บทดสอบ)
+- `/` Home
+- `/products` Product List
+- `/products/:slug` Product Detail
+- `/cart` Cart
+- `/checkout` Checkout
+- `/orders` Order History
+- `/login` / `/register`
 
 ---
 

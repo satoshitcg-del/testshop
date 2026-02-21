@@ -1,5 +1,7 @@
 # 🗄️ 3. Database Design (ออกแบบฐานข้อมูล)
 
+> หมายเหตุ: สำหรับเว็บทดสอบ แนะนำใช้ “Schema แบบย่อ (Test/MVP)” เพื่อพัฒนาให้เร็วขึ้น
+
 ## 3.1 Entity Relationship Diagram (ERD)
 
 ```
@@ -120,6 +122,44 @@
 │ created_at     │     │ end_date       │     └────────────────┘
 └────────────────┘     │ is_active      │
                        └────────────────┘
+```
+
+---
+
+## 3.1.1 Test/MVP ERD (Schema แบบย่อ)
+
+```
+┌────────────────┐     ┌────────────────┐     ┌────────────────┐
+│     users      │     │    products    │     │     orders     │
+├────────────────┤     ├────────────────┤     ├────────────────┤
+│ id (PK)        │     │ id (PK)        │     │ id (PK)        │
+│ email          │     │ name           │     │ user_id (FK)   │
+│ password_hash  │     │ slug           │     │ status         │
+│ full_name      │     │ description    │     │ payment_status │
+│ role           │     │ price          │     │ subtotal       │
+│ created_at     │     │ stock_quantity │     │ total_amount   │
+└────────────────┘     └────────────────┘     │ created_at     │
+         │                    │               └────────────────┘
+         │                    │
+         ▼                    ▼
+┌────────────────┐     ┌────────────────┐
+│     carts      │     │  order_items   │
+├────────────────┤     ├────────────────┤
+│ id (PK)        │     │ id (PK)        │
+│ user_id (FK)   │     │ order_id (FK)  │
+│ created_at     │     │ product_id(FK) │
+└────────────────┘     │ price          │
+         │             │ quantity       │
+         ▼             │ subtotal       │
+┌────────────────┐     └────────────────┘
+│  cart_items    │
+├────────────────┤
+│ id (PK)        │
+│ cart_id (FK)   │
+│ product_id(FK) │
+│ quantity       │
+│ price_at_time  │
+└────────────────┘
 ```
 
 ---
@@ -549,6 +589,101 @@ model AuditLog {
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@map("audit_logs")
+}
+```
+
+---
+
+## 3.2.1 Test/MVP Prisma Schema (แบบย่อ)
+
+```prisma
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  fullName     String    @map("full_name")
+  role         UserRole  @default(CUSTOMER)
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  carts  Cart[]
+  orders Order[]
+
+  @@map("users")
+}
+
+model Product {
+  id            String   @id @default(uuid())
+  name          String
+  slug          String   @unique
+  description   String   @db.Text
+  price         Decimal  @db.Decimal(10, 2)
+  stockQuantity Int      @default(0) @map("stock_quantity")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id          String @id @default(uuid())
+  cartId      String @map("cart_id")
+  productId   String @map("product_id")
+  quantity    Int
+  priceAtTime Decimal @map("price_at_time") @db.Decimal(10, 2)
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+  @@map("cart_items")
+}
+
+model Order {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  status        String   @default("PENDING")
+  paymentStatus String   @default("PENDING") @map("payment_status")
+  subtotal      Decimal  @db.Decimal(10, 2)
+  totalAmount   Decimal  @map("total_amount") @db.Decimal(10, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user  User        @relation(fields: [userId], references: [id])
+  items OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String  @id @default(uuid())
+  orderId     String  @map("order_id")
+  productId   String  @map("product_id")
+  productName String  @map("product_name")
+  price       Decimal @db.Decimal(10, 2)
+  quantity    Int
+  subtotal    Decimal @db.Decimal(10, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
 }
 ```
 
