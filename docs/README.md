@@ -11,7 +11,8 @@
 | 1 | [Requirements Analysis](./01-Requirements-Analysis.md) | วิเคราะห์ความต้องการระบบ |
 | 2 | [System Architecture](./02-System-Architecture.md) | สถาปัตยกรรมระบบ |
 | 3 | [Database Design](./03-Database-Design.md) | ออกแบบฐานข้อมูล (Prisma Schema) |
-| 4 | [API Design](./04-API-Design.md) | ออกแบบ API Endpoints |
+| 4 | [API Design](./04-API-Design.md) | ออกแบบ API Endpoints (ฉบับเต็ม) |
+| 📘 | **[API Documentation](./API-Documentation.md)** | **API Quick Reference & Testing Guide** ⭐ |
 | 5 | [Frontend Design](./05-Frontend-Design.md) | ออกแบบหน้าบ้าน (Next.js) |
 | 6 | [Backend Design](./06-Backend-Design.md) | ออกแบบหลังบ้าน (Node.js/Express) |
 | 7 | [Development Plan](./07-Development-Plan.md) | แผนการพัฒนา |
