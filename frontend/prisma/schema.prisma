@@ -1,4 +1,4 @@
-﻿// prisma/schema.prisma
+// prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -9,17 +9,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  CUSTOMER
-  ADMIN
-}
-
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
   passwordHash String   @map("password_hash")
   fullName     String   @map("full_name")
-  role         UserRole @default(CUSTOMER)
+  role         String   @default("CUSTOMER")
   createdAt    DateTime @default(now()) @map("created_at")
 
   carts  Cart[]
@@ -32,8 +27,8 @@ model Product {
   id            String   @id @default(uuid())
   name          String
   slug          String   @unique
-  description   String   @db.Text
-  price         Decimal  @db.Decimal(10, 2)
+  description   String
+  price         Float
   stockQuantity Int      @default(0) @map("stock_quantity")
   createdAt     DateTime @default(now()) @map("created_at")
 
@@ -60,7 +55,7 @@ model CartItem {
   cartId      String  @map("cart_id")
   productId   String  @map("product_id")
   quantity    Int
-  priceAtTime Decimal @map("price_at_time") @db.Decimal(10, 2)
+  priceAtTime Float   @map("price_at_time")
 
   cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
@@ -74,8 +69,8 @@ model Order {
   userId        String   @map("user_id")
   status        String   @default("PENDING")
   paymentStatus String   @default("PENDING") @map("payment_status")
-  subtotal      Decimal  @db.Decimal(10, 2)
-  totalAmount   Decimal  @map("total_amount") @db.Decimal(10, 2)
+  subtotal      Float
+  totalAmount   Float    @map("total_amount")
   createdAt     DateTime @default(now()) @map("created_at")
 
   user  User       @relation(fields: [userId], references: [id])
@@ -89,9 +84,9 @@ model OrderItem {
   orderId     String  @map("order_id")
   productId   String  @map("product_id")
   productName String  @map("product_name")
-  price       Decimal @db.Decimal(10, 2)
+  price       Float
   quantity    Int
-  subtotal    Decimal @db.Decimal(10, 2)
+  subtotal    Float
 
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
