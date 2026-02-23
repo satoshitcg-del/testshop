@@ -47,11 +47,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: "Product not found" }, { status: 404 });
   }
 
-  const cart = await prisma.cart.upsert({
+  // Find or create cart (upsert doesn't work with userId, need to use id)
+  let cart = await prisma.cart.findFirst({
     where: { userId: user.id },
-    update: {},
-    create: { userId: user.id },
   });
+  
+  if (!cart) {
+    cart = await prisma.cart.create({
+      data: { userId: user.id },
+    });
+  }
 
   const existing = await prisma.cartItem.findUnique({
     where: { cartId_productId: { cartId: cart.id, productId } },
