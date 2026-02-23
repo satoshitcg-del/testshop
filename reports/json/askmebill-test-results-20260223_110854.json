@@ -1,0 +1,39 @@
+{
+  "target": "https://sit.askmebill.com/",
+  "timestamp": "2026-02-23T11:08:54.685808",
+  "tests": [
+    {
+      "test": "security_headers",
+      "result": {
+        "strict-transport-security": "MISSING",
+        "x-frame-options": "MISSING",
+        "x-content-type-options": "MISSING",
+        "content-security-policy": "MISSING",
+        "x-xss-protection": "MISSING"
+      },
+      "status": "info",
+      "timestamp": "2026-02-23T11:08:56.888650"
+    },
+    {
+      "test": "page_info",
+      "result": {
+        "title": "Askmebill",
+        "url": "https://sit.askmebill.com/auth/login"
+      },
+      "status": "info",
+      "timestamp": "2026-02-23T11:08:56.893888"
+    },
+    {
+      "test": "forms_found",
+      "result": 1,
+      "status": "info",
+      "timestamp": "2026-02-23T11:08:56.915640"
+    },
+    {
+      "test": "error",
+      "result": "'charmap' codec can't encode character '\\u2705' in position 4: character maps to <undefined>",
+      "status": "exception",
+      "timestamp": "2026-02-23T11:08:56.915672"
+    }
+  ]
+}

@@ -16,7 +16,7 @@ playwright install chromium
 
 ```bash
 # รัน script
-python askmebill_playwright_test.py
+python scripts/testing/askmebill_playwright_test.py
 ```
 
 ---

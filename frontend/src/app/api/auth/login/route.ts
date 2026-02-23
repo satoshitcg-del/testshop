@@ -20,17 +20,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: "Invalid email or password" }, { status: 401 });
   }
 
+  const role = user.role === "ADMIN" ? "ADMIN" : "CUSTOMER";
+
   const accessToken = issueToken({
     id: user.id,
     email: user.email,
-    role: user.role,
+    role,
     fullName: user.fullName,
   });
 
   return NextResponse.json({
     success: true,
     data: {
-      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role },
+      user: { id: user.id, email: user.email, fullName: user.fullName, role },
       accessToken,
       expiresIn: 3600,
     },
