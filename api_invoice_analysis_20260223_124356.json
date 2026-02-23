@@ -1,0 +1,16 @@
+{
+  "endpoint": "/api/invoice/:id",
+  "method": "GET",
+  "purpose": "Retrieve invoice details by ID",
+  "called_when": [
+    "View invoice details",
+    "Load invoice list",
+    "Dashboard widget refresh",
+    "Auto-refresh data",
+    "Payment processing",
+    "Export/Download"
+  ],
+  "vulnerability": "IDOR - No authorization check",
+  "exploitation": "Change ID parameter to access other users' invoices",
+  "timestamp": "2026-02-23T12:43:56.677616"
+}
