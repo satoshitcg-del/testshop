@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   const accessToken = issueToken({
     id: user.id,
     email: user.email,
-    role: user.role,
+    role: user.role as "CUSTOMER" | "ADMIN",
     fullName: user.fullName,
   });
 
