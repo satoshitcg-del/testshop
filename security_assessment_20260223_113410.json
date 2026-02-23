@@ -1,0 +1,62 @@
+{
+  "target": "https://sit.askmebill.com/",
+  "timestamp": "2026-02-23T11:33:58.143774",
+  "findings": [
+    {
+      "severity": "Medium",
+      "category": "Security Headers",
+      "title": "Missing Security Headers",
+      "detail": "Missing: strict-transport-security, x-frame-options, x-content-type-options, content-security-policy, x-xss-protection",
+      "evidence": "Security headers help protect against XSS, clickjacking, and other attacks",
+      "timestamp": "2026-02-23T11:34:02.909638"
+    },
+    {
+      "severity": "Low",
+      "category": "Info Disclosure",
+      "title": "Exposed File: /robots.txt",
+      "detail": "File /robots.txt is accessible",
+      "evidence": "May contain sensitive information",
+      "timestamp": "2026-02-23T11:34:09.034785"
+    },
+    {
+      "severity": "Low",
+      "category": "Info Disclosure",
+      "title": "Exposed File: /.well-known/security.txt",
+      "detail": "File /.well-known/security.txt is accessible",
+      "evidence": "May contain sensitive information",
+      "timestamp": "2026-02-23T11:34:09.421600"
+    },
+    {
+      "severity": "Low",
+      "category": "Info Disclosure",
+      "title": "Exposed File: /api/docs",
+      "detail": "File /api/docs is accessible",
+      "evidence": "May contain sensitive information",
+      "timestamp": "2026-02-23T11:34:09.620925"
+    },
+    {
+      "severity": "Low",
+      "category": "Info Disclosure",
+      "title": "Exposed File: /swagger",
+      "detail": "File /swagger is accessible",
+      "evidence": "May contain sensitive information",
+      "timestamp": "2026-02-23T11:34:09.797443"
+    },
+    {
+      "severity": "Low",
+      "category": "Info Disclosure",
+      "title": "Exposed File: /swagger-ui.html",
+      "detail": "File /swagger-ui.html is accessible",
+      "evidence": "May contain sensitive information",
+      "timestamp": "2026-02-23T11:34:10.041375"
+    }
+  ],
+  "tests": [
+    {
+      "test": "IDOR Testing",
+      "status": "COMPLETE",
+      "detail": "Tested 9 endpoints",
+      "time": "2026-02-23T11:34:05.292600"
+    }
+  ]
+}
