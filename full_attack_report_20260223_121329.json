@@ -1,0 +1,111 @@
+{
+  "timestamp": "2026-02-23T12:13:29.871237",
+  "target": "https://sit.askmebill.com",
+  "skills_used": [
+    "pentest-payloads",
+    "pentest-assistant",
+    "httpcloak-assistant"
+  ],
+  "summary": {
+    "Critical": 0,
+    "High": 5,
+    "Medium": 4,
+    "Low": 0
+  },
+  "findings": [
+    {
+      "timestamp": "2026-02-23T12:13:26.836350",
+      "severity": "Medium",
+      "category": "A07 - Auth Failures",
+      "title": "Potential Bypass /invoices",
+      "detail": "Status 200 but unclear content",
+      "payload": "/invoices"
+    },
+    {
+      "timestamp": "2026-02-23T12:13:26.853280",
+      "severity": "Medium",
+      "category": "A07 - Auth Failures",
+      "title": "Potential Bypass /dashboard",
+      "detail": "Status 200 but unclear content",
+      "payload": "/dashboard"
+    },
+    {
+      "timestamp": "2026-02-23T12:13:26.871302",
+      "severity": "Medium",
+      "category": "A07 - Auth Failures",
+      "title": "Potential Bypass /profile",
+      "detail": "Status 200 but unclear content",
+      "payload": "/profile"
+    },
+    {
+      "timestamp": "2026-02-23T12:13:26.885935",
+      "severity": "Medium",
+      "category": "A07 - Auth Failures",
+      "title": "Potential Bypass /settings",
+      "detail": "Status 200 but unclear content",
+      "payload": "/settings"
+    },
+    {
+      "timestamp": "2026-02-23T12:13:29.722633",
+      "severity": "High",
+      "category": "A01 - Broken Access Control",
+      "title": "IDOR Invoice 1",
+      "detail": "Can access invoice ID 1 that doesn't belong to user",
+      "payload": ""
+    },
+    {
+      "timestamp": "2026-02-23T12:13:29.742981",
+      "severity": "High",
+      "category": "A01 - Broken Access Control",
+      "title": "IDOR Invoice 2",
+      "detail": "Can access invoice ID 2 that doesn't belong to user",
+      "payload": ""
+    },
+    {
+      "timestamp": "2026-02-23T12:13:29.760244",
+      "severity": "High",
+      "category": "A01 - Broken Access Control",
+      "title": "IDOR Invoice 3",
+      "detail": "Can access invoice ID 3 that doesn't belong to user",
+      "payload": ""
+    },
+    {
+      "timestamp": "2026-02-23T12:13:29.774978",
+      "severity": "High",
+      "category": "A01 - Broken Access Control",
+      "title": "IDOR Invoice 999",
+      "detail": "Can access invoice ID 999 that doesn't belong to user",
+      "payload": ""
+    },
+    {
+      "timestamp": "2026-02-23T12:13:29.790887",
+      "severity": "High",
+      "category": "A01 - Broken Access Control",
+      "title": "IDOR Invoice 1000",
+      "detail": "Can access invoice ID 1000 that doesn't belong to user",
+      "payload": ""
+    }
+  ],
+  "successful_attacks": [
+    {
+      "type": "idor",
+      "id": 1
+    },
+    {
+      "type": "idor",
+      "id": 2
+    },
+    {
+      "type": "idor",
+      "id": 3
+    },
+    {
+      "type": "idor",
+      "id": 999
+    },
+    {
+      "type": "idor",
+      "id": 1000
+    }
+  ]
+}
