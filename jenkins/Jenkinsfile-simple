@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+    
+    environment {
+        API_URL = 'https://testshop-lr30.onrender.com'
+    }
+    
+    stages {
+        stage('Test') {
+            steps {
+                sh '''
+                    echo "Testing API at ${API_URL}"
+                    
+                    # Test 1: Health Check
+                    curl -s ${API_URL}/api/products > /dev/null && echo "API is up" || echo "API is down"
+                    
+                    # Test 2: Authentication
+                    curl -s -X POST ${API_URL}/api/auth/login \
+                        -H "Content-Type: application/json" \
+                        -d '{"email": "test1@gmail.com", "password": "Aa123456"}' | grep -q "success" && echo "Auth: PASSED" || echo "Auth: FAILED"
+                    
+                    # Test 3: Public API
+                    curl -s ${API_URL}/api/products | grep -q "success" && echo "Products: PASSED" || echo "Products: FAILED"
+                '''
+            }
+        }
+    }
+}

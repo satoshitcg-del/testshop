@@ -1,0 +1,159 @@
+pipeline {
+    agent any
+    
+    environment {
+        NODE_VERSION = '18'
+        API_BASE_URL = 'https://testshop-lr30.onrender.com'
+        TEST_REPORT_DIR = 'test-reports'
+    }
+    
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timeout(time: 30, unit: 'MINUTES')
+        disableConcurrentBuilds()
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out source code...'
+                checkout scm
+            }
+        }
+        
+        stage('Setup') {
+            steps {
+                echo 'Setting up environment...'
+                sh '''
+                    node --version
+                    npm --version
+                '''
+            }
+        }
+        
+        stage('Install Dependencies') {
+            parallel {
+                stage('Install Newman') {
+                    steps {
+                        sh 'npm install -g newman newman-reporter-htmlextra'
+                    }
+                }
+                stage('Install Frontend Deps') {
+                    steps {
+                        dir('frontend') {
+                            sh 'npm install'
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('API Tests') {
+            parallel {
+                stage('Authentication Tests') {
+                    steps {
+                        script {
+                            runTestGroup('authentication', 'TC-AUTH')
+                        }
+                    }
+                }
+                stage('User Profile Tests') {
+                    steps {
+                        script {
+                            runTestGroup('user-profile', 'TC-USER')
+                        }
+                    }
+                }
+                stage('Product Tests') {
+                    steps {
+                        script {
+                            runTestGroup('products', 'TC-PROD')
+                        }
+                    }
+                }
+                stage('Cart Tests') {
+                    steps {
+                        script {
+                            runTestGroup('cart', 'TC-CART')
+                        }
+                    }
+                }
+                stage('Order Tests') {
+                    steps {
+                        script {
+                            runTestGroup('orders', 'TC-ORDER')
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Admin API Tests') {
+            steps {
+                script {
+                    runTestGroup('admin', 'TC-ADMIN')
+                }
+            }
+        }
+        
+        stage('Integration Tests') {
+            steps {
+                script {
+                    runTestGroup('integration', 'TC-INT')
+                }
+            }
+        }
+        
+        stage('Generate Reports') {
+            steps {
+                sh """
+                    mkdir -p ${TEST_REPORT_DIR}
+                    echo 'Test execution completed'
+                    ls -la ${TEST_REPORT_DIR}/
+                """
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo 'Publishing test results...'
+            publishTestResults()
+            cleanWs()
+        }
+        success {
+            echo 'All tests passed!'
+            // notifySlack('success')
+        }
+        failure {
+            echo 'Some tests failed!'
+            // notifySlack('failure')
+        }
+        unstable {
+            echo 'Tests unstable'
+        }
+    }
+}
+
+def runTestGroup(String groupName, String testPrefix) {
+    echo "Running ${groupName} tests..."
+    sh """
+        mkdir -p ${TEST_REPORT_DIR}
+        bash jenkins/scripts/run-api-tests.sh ${groupName} ${testPrefix} ${API_BASE_URL} > ${TEST_REPORT_DIR}/${groupName}.log 2>&1
+    """
+}
+
+def publishTestResults() {
+    // Publish HTML reports
+    publishHTML([
+        allowMissing: false,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: "${TEST_REPORT_DIR}",
+        reportFiles: '*.html',
+        reportName: 'API Test Reports'
+    ])
+    
+    // Archive artifacts
+    archiveArtifacts artifacts: "${TEST_REPORT_DIR}/**/*", allowEmptyArchive: true
+}
