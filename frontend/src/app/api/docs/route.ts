@@ -1,37 +1,7 @@
 import { NextResponse } from "next/server";
-import { readFileSync } from "fs";
-import { join } from "path";
 
 export async function GET() {
-  // Try multiple paths for different environments
-  const possiblePaths = [
-    join(process.cwd(), "docs", "api", "openapi.yaml"),           // Root level
-    join(process.cwd(), "..", "docs", "api", "openapi.yaml"),     // From frontend/
-    join(process.cwd(), "..", "..", "docs", "api", "openapi.yaml"), // From frontend/src/app/api
-    "/opt/render/project/src/docs/api/openapi.yaml",                // Render specific
-  ];
-  
-  let yamlContent: string | null = null;
-  
-  for (const yamlPath of possiblePaths) {
-    try {
-      yamlContent = readFileSync(yamlPath, "utf-8");
-      break;
-    } catch {
-      continue;
-    }
-  }
-  
-  if (!yamlContent) {
-    return NextResponse.json(
-      { success: false, error: "OpenAPI spec not found" },
-      { status: 500 }
-    );
-  }
-  
-  try {
-    
-    const html = `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -50,15 +20,10 @@ export async function GET() {
 <body>
   <div id="swagger-ui"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.10.3/swagger-ui-bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
   <script>
-    const spec = ${JSON.stringify(yamlContent)};
-    
     window.onload = function() {
-      const parsedSpec = jsyaml.load(spec);
-      
       SwaggerUIBundle({
-        spec: parsedSpec,
+        url: 'https://raw.githubusercontent.com/satoshitcg-del/testshop/main/docs/api/openapi.yaml',
         dom_id: '#swagger-ui',
         deepLinking: true,
         presets: [
@@ -78,16 +43,9 @@ export async function GET() {
 </body>
 </html>`;
 
-    return new NextResponse(html, {
-      headers: {
-        "Content-Type": "text/html",
-      },
-    });
-  } catch (error) {
-    console.error("Failed to load OpenAPI spec:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to load API documentation" },
-      { status: 500 }
-    );
-  }
+  return new NextResponse(html, {
+    headers: {
+      "Content-Type": "text/html",
+    },
+  });
 }
