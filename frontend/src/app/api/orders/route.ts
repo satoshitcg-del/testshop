@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
 
@@ -45,11 +45,32 @@ export async function POST(req: Request) {
     where: { id: { in: cart.items.map((i) => i.productId) } },
   });
 
+  // Validate stock for all items
+  const stockErrors: string[] = [];
+  for (const item of cart.items) {
+    const product = products.find((p) => p.id === item.productId);
+    if (!product) {
+      stockErrors.push(`Product not found for item ${item.productId}`);
+    } else if (product.stockQuantity < item.quantity) {
+      stockErrors.push(
+        `${product.name}: Only ${product.stockQuantity} available, but you ordered ${item.quantity}`
+      );
+    }
+  }
+
+  if (stockErrors.length > 0) {
+    return NextResponse.json(
+      { success: false, error: "Insufficient stock", details: stockErrors },
+      { status: 400 }
+    );
+  }
+
+  // Build order items and deduct stock
   const items = cart.items.map((i) => {
-    const product = products.find((p) => p.id === i.productId);
+    const product = products.find((p) => p.id === i.productId)!;
     return {
       productId: i.productId,
-      productName: product?.name || "Unknown",
+      productName: product.name,
       price: i.priceAtTime,
       quantity: i.quantity,
       subtotal: i.priceAtTime * i.quantity,
@@ -58,19 +79,38 @@ export async function POST(req: Request) {
 
   const subtotal = items.reduce((sum, i) => sum + Number(i.subtotal), 0);
 
-  const order = await prisma.order.create({
-    data: {
-      userId: user.id,
-      status: "PENDING",
-      paymentStatus: "PENDING",
-      subtotal,
-      totalAmount: subtotal,
-      items: { create: items },
-    },
-    include: { items: true },
-  });
+  // Create order and deduct stock in a transaction
+  const order = await prisma.$transaction(async (tx) => {
+    // Deduct stock for each product
+    for (const item of cart.items) {
+      await tx.product.update({
+        where: { id: item.productId },
+        data: {
+          stockQuantity: {
+            decrement: item.quantity,
+          },
+        },
+      });
+    }
 
-  await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+    // Create the order
+    const newOrder = await tx.order.create({
+      data: {
+        userId: user.id,
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        subtotal,
+        totalAmount: subtotal,
+        items: { create: items },
+      },
+      include: { items: true },
+    });
+
+    // Clear the cart
+    await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+
+    return newOrder;
+  });
 
   return NextResponse.json({ success: true, data: normalizeOrder(order) });
 }
