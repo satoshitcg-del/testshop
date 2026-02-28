@@ -8,10 +8,44 @@
 
 ## 📋 สารบัญ
 
-1. [System Flow - ระบบทำงานยังไง](#1-system-flow)
-2. [Server Flow - เซิร์ฟเวอร์ทำงานยังไง](#2-server-flow)
-3. [โจทย์ข้อสอบ พร้อมเฉลย](#3-โจทย์ข้อสอบ)
-4. [Postman Collection Structure](#4-postman-collection-structure)
+1. [JavaScript Best Practices](#-javascript-best-practices)
+2. [System Flow - ระบบทำงานยังไง](#1-system-flow)
+3. [Server Flow - เซิร์ฟเวอร์ทำงานยังไง](#2-server-flow)
+4. [โจทย์ข้อสอบ พร้อมเฉลย](#3-โจทย์ข้อสอบ)
+5. [Postman Collection Structure](#4-postman-collection-structure)
+
+---
+
+## 💡 JavaScript Best Practices
+
+### ใช้ `const` และ `let` แทน `var`
+
+เอกสารนี้ใช้ **Modern JavaScript (ES6+)** โดยใช้ `const` และ `let` แทน `var`:
+
+```javascript
+// ✅ แบบที่ควรใช้ (Modern)
+const jsonData = pm.response.json();      // ไม่เปลี่ยนค่า
+const token = jsonData.data.accessToken;  // ไม่เปลี่ยนค่า
+let retryCount = 0;                        // อาจเปลี่ยนค่าได้
+
+// ❌ แบบเก่า (ไม่แนะนำ)
+var jsonData = pm.response.json();
+var token = jsonData.data.accessToken;
+```
+
+**ทำไมถึงไม่ใช้ `var`:**
+- `var` มี **function scope** (งงๆ หลุดออกนอก block)
+- `var` สามารถ **ประกาศซ้ำ**ได้ (อันตราย)
+- `var` มี **hoisting** (ยกตัวแปรไปบนก่อน run)
+
+**กฎง่ายๆ:**
+| ใช้เมื่อ... | Keyword |
+|-------------|---------|
+| ไม่เปลี่ยนค่า | `const` |
+| เปลี่ยนค่าได้ | `let` |
+| ไม่ต้องใช้ | `var` ❌ |
+
+---
 
 ---
 
@@ -224,19 +258,19 @@ pm.test("Status code is 200", function () {
 });
 
 pm.test("Response has success = true", function () {
-    var jsonData = pm.response.json();
+    const jsonData = pm.response.json();
     pm.expect(jsonData.success).to.eql(true);
 });
 
 pm.test("Response has accessToken", function () {
-    var jsonData = pm.response.json();
+    const jsonData = pm.response.json();
     pm.expect(jsonData.data.accessToken).to.exist;
     // เก็บ token ไว้ใช้ต่อ
     pm.environment.set("accessToken", jsonData.data.accessToken);
 });
 
 pm.test("Response has user data", function () {
-    var jsonData = pm.response.json();
+    const jsonData = pm.response.json();
     pm.expect(jsonData.data.user).to.have.property("id");
     pm.expect(jsonData.data.user).to.have.property("email");
     pm.expect(jsonData.data.user).to.have.property("role", "CUSTOMER");
@@ -265,7 +299,7 @@ pm.test("Status code is 400 for missing fields", function () {
 });
 
 pm.test("Error message indicates missing fields", function () {
-    var jsonData = pm.response.json();
+    const jsonData = pm.response.json();
     pm.expect(jsonData.success).to.eql(false);
     pm.expect(jsonData.error).to.include("Missing");
 });
@@ -279,7 +313,7 @@ pm.test("Status code is 409 for duplicate email", function () {
 });
 
 pm.test("Error indicates email already exists", function () {
-    var jsonData = pm.response.json();
+    const jsonData = pm.response.json();
     pm.expect(jsonData.success).to.eql(false);
     pm.expect(jsonData.error).to.include("already exists");
 });
@@ -312,14 +346,14 @@ pm.test("Login successful - Status 200", function () {
 });
 
 pm.test("Returns valid token", function () {
-    var jsonData = pm.response.json();
+    const jsonData = pm.response.json();
     pm.expect(jsonData.data.accessToken).to.be.a('string');
     pm.expect(jsonData.data.accessToken.split('.')).to.have.lengthOf(3); // JWT format
     pm.environment.set("accessToken", jsonData.data.accessToken);
 });
 
 pm.test("Token contains correct user info", function () {
-    var jsonData = pm.response.json();
+    const jsonData = pm.response.json();
     pm.expect(jsonData.data.user.email).to.eql(pm.environment.get("email"));
 });
 ```
@@ -332,7 +366,7 @@ pm.test("Invalid password returns 401", function () {
 });
 
 pm.test("Error message is generic (security)", function () {
-    var jsonData = pm.response.json();
+    const jsonData = pm.response.json();
     pm.expect(jsonData.error).to.eql("Invalid email or password");
     // ❗ ไม่ควรบอกว่า email ไม่มี หรือ password ผิด
 });
@@ -361,7 +395,7 @@ pm.test("Non-existent user returns 401", function () {
 // GET /api/user/profile with valid token
 pm.test("Valid token returns user profile", function () {
     pm.response.to.have.status(200);
-    var jsonData = pm.response.json();
+    const jsonData = pm.response.json();
     pm.expect(jsonData.data).to.have.property("email");
 });
 ```
@@ -387,7 +421,7 @@ pm.test("Invalid token returns 401", function () {
 // ต้องรอ token หมดอายุ หรือ forge expired token
 // หรือ test ว่า token มี expiration
 pm.test("Token has expiration", function () {
-    var jsonData = pm.response.json();
+    const jsonData = pm.response.json();
     pm.expect(jsonData.data.expiresIn).to.exist;
 });
 ```
