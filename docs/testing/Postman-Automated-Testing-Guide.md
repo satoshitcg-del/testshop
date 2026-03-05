@@ -87,6 +87,109 @@ File → New → Workspace → ตั้งชื่อ (เช่น "Automated
 Collections → New Collection → ตั้งชื่อ (เช่น "API Test Suite")
 ```
 
+### 4. ตั้งชื่อ Request ด้วย Test Case ID
+
+แนะนำให้ตั้งชื่อ request ด้วยรูปแบบ:
+
+`<MODULE>-<NUMBER> <Short Description>`
+
+ตัวอย่าง:
+- `AUTH-001 Login Success`
+- `AUTH-002 Login Invalid Password`
+- `CART-003 Add Item To Cart`
+
+เหตุผล:
+- trace กลับไปเอกสาร test case ได้เร็ว
+- อ่านรายงาน Collection Runner / Newman ง่ายขึ้น
+
+---
+
+### 5. แยก Environment ให้ชัด (Local / Staging)
+
+ควรมีอย่างน้อย 2 environment:
+- `TestShop - Local`
+- `TestShop - Staging`
+
+แนวทาง:
+- ใช้ชื่อ variable เดียวกันทุก environment เช่น `base_url`, `auth_token`
+- ห้ามใช้ข้อมูล production กับชุดทดสอบ
+- เก็บค่าลับไว้ใน Current Value และไม่ commit ลง repo
+
+---
+
+### 6. ใช้ Pre-request Script กลางระดับ Collection
+
+ใส่สคริปต์นี้ใน Collection-level Pre-request Script เพื่อกันความผิดพลาดพื้นฐานก่อนยิง API:
+
+```javascript
+// TH: ตรวจค่า base_url ก่อนทุก request
+// EN: Ensure base_url is configured for every request
+if (!pm.environment.get("base_url")) {
+    throw new Error("Missing environment variable: base_url");
+}
+
+// TH: ถ้าเป็น endpoint ที่ต้อง auth แต่ยังไม่มี token ให้เตือนชัดเจน
+// EN: Warn early when protected endpoints are called without token
+const path = pm.request.url.getPath();
+const isProtected = path.startsWith("/api/cart") || path.startsWith("/api/orders") || path.startsWith("/api/user");
+const token = pm.environment.get("auth_token");
+
+if (isProtected && !token) {
+    throw new Error("Missing auth_token for protected endpoint: " + path);
+}
+```
+
+### 7. Run Order มาตรฐาน (แนะนำ)
+
+เพื่อหลีกเลี่ยง test fail จาก dependency ให้รันตามลำดับนี้:
+
+1. `AUTH` (register/login และเก็บ token)
+2. `PRODUCTS` (ดึงรายการสินค้าและเลือก productId ที่ใช้ทดสอบ)
+3. `CART` (เพิ่ม/แก้ไข/ลบ และเก็บ itemId)
+4. `ORDERS` (create order และตรวจ order history)
+5. `CLEANUP` (ถ้ามีขั้นตอนล้างข้อมูลทดสอบ)
+
+เหตุผล:
+- ลดปัญหา request หลังใช้ข้อมูลที่ยังไม่ถูกสร้าง
+- ทำให้ผลรันใน Collection Runner และ Newman เสถียรมากขึ้น
+
+---
+
+### 8. Known Good Test Data (ข้อมูลทดสอบมาตรฐาน)
+
+กำหนดชุดข้อมูลขั้นต่ำที่ทีมใช้ร่วมกัน เพื่อให้ผลเทสสอดคล้องกัน:
+
+- User:
+  - `customer@test.com / password123`
+  - `admin@test.com / password123`
+- Product:
+  - มีสินค้าอย่างน้อย 1 รายการที่ `stockQuantity >= 5`
+  - มี `slug` ใช้ทดสอบรายละเอียดสินค้าได้
+- Cart:
+  - เริ่มจากตะกร้าว่าง หรือมีขั้นตอน clear cart ก่อนรัน
+
+แนวทาง:
+- ระบุในเอกสารว่า test case ไหนพึ่งพา seed data
+- ถ้า seed เปลี่ยน ให้ปรับ expected results และ collection พร้อมกัน
+
+---
+
+### 9. Pass/Fail Criteria ระดับ Collection
+
+กำหนดเกณฑ์ผ่านร่วมกันก่อนรันจริง:
+
+- `Critical Tests` (Auth, Cart, Order happy path): ต้องผ่าน 100%
+- `High Priority Negative Tests` (401, validation): ต้องผ่าน 100%
+- `Non-critical Tests`: fail ได้ไม่เกิน 5% และต้องมี ticket ติดตาม
+- ถ้า critical fail อย่างน้อย 1 เคส: ให้ถือว่า collection run ไม่ผ่านทันที
+
+ตัวอย่างสรุปผลที่ควรบันทึก:
+- Total requests: 25
+- Total assertions: 120
+- Failed assertions: 0
+- Critical failed: 0
+- Final result: `PASS`
+
 ---
 
 ## Postman Scripts เบื้องต้น
@@ -173,6 +276,45 @@ pm.test("Response time is less than 500ms", function () {
 pm.test("Content-Type is JSON", function () {
     pm.response.to.have.header("Content-Type");
     pm.expect(pm.response.headers.get("Content-Type")).to.include("application/json");
+});
+```
+
+### ✅ Expected Results Template (ใช้เป็น Checklist ต่อ 1 Request)
+
+ใช้รายการนี้ทุกครั้งเวลาสร้าง test case ใหม่ใน Postman:
+
+- [ ] `Status Code` ตรงตามเคส (เช่น 200, 400, 401, 404)
+- [ ] `Response Shape` มีโครงสร้างที่ตกลง (`success`, `data` หรือ `error`)
+- [ ] `Business Data` ค่าหลักถูกต้อง (เช่น token, items, id, status)
+- [ ] `Error Contract` (เคสลบ) มี `success: false` และ `error` ที่อ่านเข้าใจได้
+- [ ] `Auth Behavior` ไม่มี/token ผิดต้องได้ 401
+- [ ] `Data Consistency` เมื่อ create/update/delete แล้ว GET ซ้ำผลต้องตรง
+- [ ] `Type/Format` ชนิดข้อมูลถูก (`string/number/array`) และ format สำคัญถูก
+- [ ] `Boundary` ทดสอบค่าขอบ (ว่าง, 0, ติดลบ, เกินเงื่อนไข)
+- [ ] `Response Time` ผ่าน baseline ที่ทีมกำหนด
+- [ ] `Security` ไม่มีข้อมูลลับใน response (เช่น passwordHash, secret)
+
+ตัวอย่างสคริปต์มาตรฐาน:
+
+```javascript
+pm.test("Status code is expected", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Response has success + data", function () {
+    const json = pm.response.json();
+    pm.expect(json).to.have.property("success", true);
+    pm.expect(json).to.have.property("data");
+});
+
+pm.test("Response time is under baseline", function () {
+    pm.expect(pm.response.responseTime).to.be.below(1000);
+});
+
+pm.test("No sensitive fields leaked", function () {
+    const bodyText = pm.response.text();
+    pm.expect(bodyText).to.not.include("passwordHash");
+    pm.expect(bodyText).to.not.include("STRIPE_SECRET_KEY");
 });
 ```
 
