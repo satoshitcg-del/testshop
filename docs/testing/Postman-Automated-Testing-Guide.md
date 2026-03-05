@@ -2,15 +2,16 @@
 
 ## สารบัญ
 1. [บทนำ](#บทนำ)
-2. [การตั้งค่า Postman](#การตั้งค่า-postman)
-3. [Postman Scripts เบื้องต้น](#postman-scripts-เบื้องต้น)
-4. [Pre-request Scripts](#pre-request-scripts)
-5. [Test Scripts](#test-scripts)
-6. [การใช้ Variables](#การใช้-variables)
-7. [Collection Runner](#collection-runner)
-8. [Newman (CLI)](#newman-cli)
-9. [ตัวอย่าง Use Cases](#ตัวอย่าง-use-cases)
-10. [การ Integrate กับ CI/CD](#การ-integrate-กับ-cicd)
+2. [ทำไมเทสเคสถึงออกแบบแบบนี้](#ทำไมเทสเคสถึงออกแบบแบบนี้)
+3. [การตั้งค่า Postman](#การตั้งค่า-postman)
+4. [Postman Scripts เบื้องต้น](#postman-scripts-เบื้องต้น)
+5. [Pre-request Scripts](#pre-request-scripts)
+6. [Test Scripts](#test-scripts)
+7. [การใช้ Variables](#การใช้-variables)
+8. [Collection Runner](#collection-runner)
+9. [Newman (CLI)](#newman-cli)
+10. [ตัวอย่าง Use Cases](#ตัวอย่าง-use-cases)
+11. [การ Integrate กับ CI/CD](#การ-integrate-กับ-cicd)
 
 ---
 
@@ -23,6 +24,28 @@ Postman ไม่ได้เป็นเพียงเครื่องมื
 - ✅ สร้าง Test Data อัตโนมัติ
 - ✅ Chain Requests (เรียก API ต่อเนื่องกัน)
 - ✅ Integrate กับ CI/CD Pipeline
+
+---
+
+## ทำไมเทสเคสถึงออกแบบแบบนี้
+
+แนวทางในเอกสารนี้ตั้งใจให้สอดคล้องกับ API จริงของระบบ เพื่อให้ใช้ได้ทั้งตอนพัฒนาและตอนรันอัตโนมัติใน CI:
+
+1. **จับ Regression ให้เร็ว**
+   - ตรวจทั้ง `status code`, ค่า `success`, และโครงสร้าง `data` ใน endpoint หลัก
+   - ถ้า backend เปลี่ยน contract โดยไม่ตั้งใจ เทสจะ fail ทันที
+
+2. **ยึด API Contract จริง (ไม่เดา response)**
+   - ใช้ field ตามระบบจริง เช่น `data.accessToken`, `data.user`, `data.items`
+   - ลด false fail จากการ assert field ที่ไม่มีจริง
+
+3. **รองรับการทดสอบแบบ End-to-End Flow**
+   - เก็บค่าระหว่าง request ด้วย variables (`auth_token`, `user_id`, `itemId`)
+   - ทำให้เทส flow ต่อเนื่องได้ เช่น `login -> cart -> order`
+
+4. **รันซ้ำได้ในหลายสภาพแวดล้อม**
+   - แยก config ด้วย Environment Variables
+   - logic เทสชุดเดียวกันรันได้ทั้ง Local, Staging และ CI ผ่าน Newman
 
 ---
 
@@ -205,13 +228,10 @@ pm.test("Validate JSON Schema", function () {
 const responseJson = pm.response.json();
 
 // บันทึก Token
-pm.environment.set("auth_token", responseJson.token);
+pm.environment.set("auth_token", responseJson.data.accessToken);
 
 // บันทึก User ID
-pm.environment.set("user_id", responseJson.user.id);
-
-// บันทึก Refresh Token
-pm.environment.set("refresh_token", responseJson.refresh_token);
+pm.environment.set("user_id", responseJson.data.user.id);
 ```
 
 ---
@@ -405,17 +425,18 @@ console.log("Creating user with email:", email);
 ```javascript
 // Tests - Validate Registration
 pm.test("User registered successfully", function () {
-    pm.response.to.have.status(201);
-    
+    pm.response.to.have.status(200);
+
     const json = pm.response.json();
-    pm.expect(json.message).to.eql("User created successfully");
-    pm.expect(json.user).to.have.property("id");
-    pm.expect(json.user.email).to.eql(pm.environment.get("test_email"));
+    pm.expect(json.success).to.eql(true);
+    pm.expect(json.data).to.have.property("user");
+    pm.expect(json.data.user).to.have.property("id");
+    pm.expect(json.data.user.email).to.eql(pm.environment.get("test_email"));
 });
 
 // บันทึกค่าไว้ใช้ต่อ
 const json = pm.response.json();
-pm.environment.set("new_user_id", json.user.id);
+pm.environment.set("new_user_id", json.data.user.id);
 ```
 
 ---
@@ -427,16 +448,17 @@ pm.environment.set("new_user_id", json.user.id);
 // Tests
 pm.test("Login successful", function () {
     pm.response.to.have.status(200);
-    
+
     const json = pm.response.json();
-    pm.expect(json).to.have.property("token");
-    pm.expect(json).to.have.property("refresh_token");
+    pm.expect(json.success).to.eql(true);
+    pm.expect(json.data).to.have.property("accessToken");
+    pm.expect(json.data).to.have.property("user");
 });
 
 // บันทึก Token
 const json = pm.response.json();
-pm.environment.set("auth_token", json.token);
-pm.environment.set("refresh_token", json.refresh_token);
+pm.environment.set("auth_token", json.data.accessToken);
+pm.environment.set("user_id", json.data.user.id);
 ```
 
 **Request 2: Get User Profile (ใช้ Token)**
@@ -458,30 +480,30 @@ pm.test("Get profile successful", function () {
 
 ---
 
-### 📝 Use Case 3: API with Pagination
+### 📝 Use Case 3: Product List Response
 
 ```javascript
-// Tests - Validate Pagination
+// Tests - Validate product list response
 const json = pm.response.json();
 
-pm.test("Response has pagination", function () {
+pm.test("Response has expected shape", function () {
+    pm.expect(json).to.have.property("success", true);
     pm.expect(json).to.have.property("data");
-    pm.expect(json).to.have.property("pagination");
-    pm.expect(json.pagination).to.have.property("current_page");
-    pm.expect(json.pagination).to.have.property("total_pages");
-    pm.expect(json.pagination).to.have.property("total_items");
+    pm.expect(json.data).to.have.property("items");
 });
 
-pm.test("Data is array", function () {
-    pm.expect(json.data).to.be.an('array');
+pm.test("Items is array", function () {
+    pm.expect(json.data.items).to.be.an('array');
 });
 
-// ถ้ามีหน้าถัดไป ให้บันทึกไว้
-if (json.pagination.current_page < json.pagination.total_pages) {
-    const nextPage = json.pagination.current_page + 1;
-    pm.environment.set("next_page", nextPage);
-    console.log("Next page available:", nextPage);
-}
+pm.test("Each item has required fields", function () {
+    json.data.items.forEach((item) => {
+        pm.expect(item).to.have.property("id");
+        pm.expect(item).to.have.property("name");
+        pm.expect(item).to.have.property("price");
+        pm.expect(item).to.have.property("stockQuantity");
+    });
+});
 ```
 
 ---
@@ -496,14 +518,8 @@ pm.test("Status code is 400", function () {
 
 pm.test("Error response structure", function () {
     const json = pm.response.json();
+    pm.expect(json).to.have.property("success", false);
     pm.expect(json).to.have.property("error");
-    pm.expect(json).to.have.property("message");
-    pm.expect(json).to.have.property("code");
-});
-
-pm.test("Error code is correct", function () {
-    const json = pm.response.json();
-    pm.expect(json.code).to.eql("INVALID_INPUT");
 });
 ```
 

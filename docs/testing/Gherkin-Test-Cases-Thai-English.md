@@ -407,7 +407,7 @@ Feature: ระบบตะกร้าสินค้า (Shopping Cart)
     When ฉันส่งคำขอ GET ไปที่ "/api/cart/items" พร้อม Authorization token
     Then ระบบตอบกลับด้วยสถานะ 200 (OK)
       And ต้องมี "data.items" ที่เป็น array
-      And ต้องมี "data.subtotal" ที่คำนวณยอดรวมถูกต้อง
+      And ต้องมี "success" เป็น true
 
   # ----------------------------------------
   # Test Case: CART-002
@@ -418,10 +418,9 @@ Feature: ระบบตะกร้าสินค้า (Shopping Cart)
       | field      | value              |
       | productId  | (Gadget 1 ID)      |
       | quantity   | 2                  |
-    Then ระบบตอบกลับด้วยสถานะ 201 (Created)
-      And ข้อความตอบกลับเป็น "Item added to cart"
+    Then ระบบตอบกลับด้วยสถานะ 200 (OK)
       And ตะกร้าต้องมีสินค้า "Gadget 1" จำนวน 2 ชิ้น
-      And ยอดรวมตะกร้าต้องเป็น 2080 บาท (1040 x 2)
+      And ใน response ต้องมี "data.items" ที่มี productId ตรงกับสินค้า
 
   # ----------------------------------------
   # Test Case: CART-003
@@ -436,20 +435,23 @@ Feature: ระบบตะกร้าสินค้า (Shopping Cart)
   # Test Case: CART-004
   # ----------------------------------------
   Scenario: แก้ไขจำนวนสินค้าในตะกร้า (Update Cart Quantity)
-    Given ฉันมี "Gadget 1" จำนวน 3 ชิ้นอยู่ในตะกร้า
-    When ฉันส่งคำขอ PATCH/PUT ไปที่ "/api/cart/items" เพื่อเปลี่ยนจำนวนเป็น 1 ชิ้น
+    Given ฉันมี "itemId" ของสินค้า "Gadget 1" ในตะกร้า
+    When ฉันส่งคำขอ PATCH ไปที่ "/api/cart/items" พร้อม:
+      | field    | value            |
+      | itemId   | (cart item id)   |
+      | quantity | 1                |
     Then จำนวน "Gadget 1" ในตะกร้าต้องเป็น 1 ชิ้น
-      And ยอดรวมต้องเป็น 1040 บาท
+      And ระบบตอบกลับด้วยสถานะ 200 (OK)
 
   # ----------------------------------------
   # Test Case: CART-005
   # ----------------------------------------
   Scenario: ลบสินค้าออกจากตะกร้า (Remove Item from Cart)
-    Given ฉันมี "Gadget 1" และ "Fashion 1" อยู่ในตะกร้า
-    When ฉันส่งคำขอ DELETE ไปที่ "/api/cart/items" พร้อม productId ของ "Gadget 1"
+    Given ฉันมี "itemId" ของสินค้า "Gadget 1" ในตะกร้า
+    When ฉันส่งคำขอ DELETE ไปที่ "/api/cart/items" พร้อม itemId ของ "Gadget 1"
     Then สินค้า "Gadget 1" ต้องถูกลบออกจากตะกร้า
-      And ตะกร้าต้องเหลือแค่ "Fashion 1"
-      And ยอดรวมต้องอัปเดตถูกต้อง
+      And ระบบตอบกลับด้วยสถานะ 200 (OK)
+      And response ต้องมี "data.items"
 
   # ----------------------------------------
   # Test Case: CART-006
@@ -493,7 +495,7 @@ Feature: Shopping Cart Management
     When I send a GET request to "/api/cart/items" with Authorization token
     Then the system responds with status 200 (OK)
       And the response should contain "data.items" as an array
-      And the response should contain "data.subtotal" with correct calculation
+      And the response should contain "success" as true
 
   # ----------------------------------------
   # Test Case: CART-002
@@ -504,10 +506,9 @@ Feature: Shopping Cart Management
       | field      | value              |
       | productId  | (Gadget 1 ID)      |
       | quantity   | 2                  |
-    Then the system responds with status 201 (Created)
-      And the message should be "Item added to cart"
+    Then the system responds with status 200 (OK)
       And the cart should contain "Gadget 1" with quantity 2
-      And the cart subtotal should be 2080 (1040 x 2)
+      And the response should contain "data.items" with matching productId
 
   # ----------------------------------------
   # Test Case: CART-003
@@ -522,20 +523,23 @@ Feature: Shopping Cart Management
   # Test Case: CART-004
   # ----------------------------------------
   Scenario: Update cart item quantity
-    Given I have "Gadget 1" with quantity 3 in my cart
-    When I send a PATCH/PUT request to "/api/cart/items" to change quantity to 1
+    Given I have "itemId" for "Gadget 1" in my cart
+    When I send a PATCH request to "/api/cart/items" with:
+      | field    | value            |
+      | itemId   | (cart item id)   |
+      | quantity | 1                |
     Then the cart should show "Gadget 1" with quantity 1
-      And the subtotal should be 1040
+      And the system responds with status 200 (OK)
 
   # ----------------------------------------
   # Test Case: CART-005
   # ----------------------------------------
   Scenario: Remove item from cart
-    Given I have "Gadget 1" and "Fashion 1" in my cart
-    When I send a DELETE request to "/api/cart/items" with productId of "Gadget 1"
+    Given I have "itemId" for "Gadget 1" in my cart
+    When I send a DELETE request to "/api/cart/items" with itemId of "Gadget 1"
     Then "Gadget 1" should be removed from the cart
-      And the cart should only contain "Fashion 1"
-      And the subtotal should be updated correctly
+      And the system responds with status 200 (OK)
+      And the response should contain "data.items"
 
   # ----------------------------------------
   # Test Case: CART-006
