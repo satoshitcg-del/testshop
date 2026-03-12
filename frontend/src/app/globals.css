@@ -1,31 +1,230 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   color-scheme: light;
+  --primary: 79 70 229;
+  --primary-hover: 67 56 202;
+  --secondary: 245 158 11;
+  --accent: 16 185 129;
+  --danger: 239 68 68;
+  --warning: 245 158 11;
+  --background: 248 250 252;
+  --surface: 255 255 255;
 }
 
 body {
-  @apply bg-slate-50 text-slate-900;
+  @apply bg-slate-50 text-slate-900 antialiased;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 .container {
-  @apply mx-auto w-full max-w-5xl px-4;
+  @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
 }
 
+/* Card Styles */
 .card {
-  @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm;
+  @apply rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm;
+  @apply transition-all duration-300 ease-out;
+  @apply hover:shadow-lg hover:border-indigo-100;
 }
 
+.card-hover {
+  @apply hover:-translate-y-1 hover:shadow-xl;
+}
+
+/* Button Styles */
 .btn {
-  @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium;
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold;
+  @apply transition-all duration-200 ease-out;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
 }
 
 .btn-primary {
-  @apply bg-slate-900 text-white hover:bg-slate-800;
+  @apply bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-200;
+  @apply hover:from-indigo-700 hover:to-violet-700 hover:shadow-lg hover:shadow-indigo-300;
+  @apply focus:ring-indigo-500 active:scale-[0.98];
+}
+
+.btn-secondary {
+  @apply bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-200;
+  @apply hover:from-amber-600 hover:to-orange-600 hover:shadow-lg hover:shadow-amber-300;
+  @apply focus:ring-amber-500 active:scale-[0.98];
 }
 
 .btn-outline {
-  @apply border border-slate-300 bg-white text-slate-900 hover:bg-slate-100;
+  @apply border-2 border-slate-200 bg-white text-slate-700;
+  @apply hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700;
+  @apply focus:ring-indigo-500 active:scale-[0.98];
 }
+
+.btn-ghost {
+  @apply text-slate-600 hover:bg-slate-100 hover:text-slate-900;
+  @apply focus:ring-slate-500;
+}
+
+.btn-danger {
+  @apply bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-md shadow-red-200;
+  @apply hover:from-red-600 hover:to-rose-600 hover:shadow-lg hover:shadow-red-300;
+  @apply focus:ring-red-500 active:scale-[0.98];
+}
+
+/* Input Styles */
+.input {
+  @apply w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm;
+  @apply transition-all duration-200;
+  @apply placeholder:text-slate-400;
+  @apply focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10;
+}
+
+.input-error {
+  @apply border-red-300 focus:border-red-500 focus:ring-red-500/10;
+}
+
+/* Badge Styles */
+.badge {
+  @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium;
+}
+
+.badge-success {
+  @apply bg-emerald-100 text-emerald-700;
+}
+
+.badge-warning {
+  @apply bg-amber-100 text-amber-700;
+}
+
+.badge-danger {
+  @apply bg-red-100 text-red-700;
+}
+
+.badge-info {
+  @apply bg-indigo-100 text-indigo-700;
+}
+
+.badge-neutral {
+  @apply bg-slate-100 text-slate-700;
+}
+
+/* Hero Section */
+.hero {
+  @apply relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700;
+  @apply px-6 py-16 text-white sm:px-12 sm:py-20;
+}
+
+.hero::before {
+  content: '';
+  @apply absolute inset-0 opacity-30;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(255,255,255,0.2) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15) 0%, transparent 40%);
+}
+
+/* Section Title */
+.section-title {
+  @apply text-2xl font-bold text-slate-900 sm:text-3xl;
+  @apply bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent;
+}
+
+/* Product Card */
+.product-card {
+  @apply card card-hover relative overflow-hidden;
+}
+
+.product-card .product-image {
+  @apply relative mb-4 aspect-square overflow-hidden rounded-xl bg-gradient-to-br from-slate-100 to-slate-200;
+  @apply flex items-center justify-center;
+}
+
+.product-card .product-image svg {
+  @apply h-20 w-20 text-slate-300 transition-transform duration-300;
+}
+
+.product-card:hover .product-image svg {
+  @apply scale-110;
+}
+
+/* Quantity Button */
+.qty-btn {
+  @apply flex h-10 w-10 items-center justify-center rounded-lg border-2 border-slate-200;
+  @apply text-slate-600 transition-all duration-200;
+  @apply hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600;
+  @apply active:scale-95;
+}
+
+/* Loading Spinner */
+.spinner {
+  @apply h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent;
+}
+
+/* Empty State */
+.empty-state {
+  @apply flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 py-16 text-center;
+}
+
+.empty-state-icon {
+  @apply mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100;
+}
+
+/* Toast/Alert */
+.alert {
+  @apply rounded-xl border p-4 text-sm;
+}
+
+.alert-error {
+  @apply border-red-200 bg-red-50 text-red-700;
+}
+
+.alert-success {
+  @apply border-emerald-200 bg-emerald-50 text-emerald-700;
+}
+
+.alert-info {
+  @apply border-indigo-200 bg-indigo-50 text-indigo-700;
+}
+
+/* Navigation Active State */
+.nav-link {
+  @apply relative text-sm font-medium text-slate-600 transition-colors hover:text-indigo-600;
+}
+
+.nav-link::after {
+  content: '';
+  @apply absolute -bottom-1 left-0 h-0.5 w-0 bg-indigo-600 transition-all duration-300;
+}
+
+.nav-link:hover::after {
+  @apply w-full;
+}
+
+/* Price Tag */
+.price-tag {
+  @apply text-lg font-bold text-indigo-600;
+}
+
+.price-tag-original {
+  @apply text-sm text-slate-400 line-through;
+}
+
+/* Gradient Text */
+.gradient-text {
+  @apply bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent;
+}
+
+/* Animation Classes */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Order Status Colors */
+.status-pending { @apply badge-warning; }
+.status-processing { @apply badge-info; }
+.status-shipped { @apply badge-success; }
+.status-delivered { @apply badge-success; }
+.status-cancelled { @apply badge-danger; }
