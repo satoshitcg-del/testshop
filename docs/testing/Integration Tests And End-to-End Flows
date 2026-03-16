@@ -1,0 +1,60 @@
+📁 Workspace: TestShop E-Commerce
+└── 📦 Collection: TestShop API Test Suite
+
+    ==================================================
+      ส่วนที่ 1: Integration Tests (ทดสอบเจาะจงราย API)
+      *เน้นหาบั๊กทางเทคนิค, การดักจับ Error, สิทธิ์การเข้าถึง*
+    ==================================================
+    ├── 📁 01 - Authentication
+    │   ├── POST [AUTH-001] Register Success (Happy Path)
+    │   ├── POST [AUTH-002] Register Duplicate Email (ดัก Error 409)
+    │   ├── POST [AUTH-004] Register Missing Fields (ดัก Error 400)
+    │   ├── POST [AUTH-005] Login Success (เซ็ต Token ลง Environment อัตโนมัติ)
+    │   ├── POST [AUTH-006] Login Invalid Password (ดัก Error 401)
+    │   └── GET  [AUTH-009] Access without Token (ลองเข้า API โดยไม่ส่ง Token)
+    │
+    ├── 📁 02 - Products
+    │   ├── GET  [PROD-001] Get All Products
+    │   ├── GET  [PROD-002] Search Products
+    │   └── GET  [PROD-003] Get Product Not Found (ดัก Error 404)
+    │
+    ├── 📁 03 - Cart
+    │   ├── GET  [CART-001] Get Empty Cart
+    │   ├── POST [CART-002] Add Item to Cart
+    │   ├── POST [CART-004] Add Item Exceeding Stock (เพิ่มเกินสต็อก ต้องได้ 400)
+    │   └── DELETE [CART-010] Remove Item from Cart
+    │
+    ├── 📁 04 - Orders & Payments
+    │   ├── POST [ORD-002] Create Order with Empty Cart (สั่งซื้อตอนตะกร้าว่าง ได้ 400)
+    │   └── GET  [ORD-006] Access Other User's Order (Security: ดูออเดอร์คนอื่นไม่ได้ ได้ 403)
+    │
+    ├── 📁 05 - Admin Management
+    │   ├── GET  [ADMIN-PROD-002] User Access Admin API (Security: ลูกค้าเข้า API แอดมินต้องโดนบล็อก)
+    │   └── POST [ADMIN-PROD-003] Admin Create Product Success
+
+    ==================================================
+      ส่วนที่ 2: End-to-End Flows (จำลองพฤติกรรมลูกค้าจริง)
+      *เน้นหาบั๊กทางธุรกิจ, การร้อยเรียง API, ข้อมูลข้ามระบบ*
+    ==================================================
+    └── 📁 06 - Integration & E2E Flows
+        │
+        ├── 📁 [INT-001] Complete Purchase Flow (โฟลว์สั่งซื้อสมบูรณ์)
+        │   ├── 1. POST Login (ลูกค้าเข้าสู่ระบบ)
+        │   ├── 2. DELETE Clear Cart (ล้างตะกร้าให้ว่างเพื่อเริ่มเทสต์)
+        │   ├── 3. GET Search Products (ค้นหาสินค้า -> แอบเก็บ Product ID ไว้)
+        │   ├── 4. POST Add to Cart (เอา Product ID มาใส่ตะกร้า)
+        │   ├── 5. POST Create Order (ยืนยันคำสั่งซื้อ -> สต็อกต้องลด)
+        │   └── 6. POST Create Payment Intent (ชำระเงินสำเร็จ)
+        │
+        ├── 📁 [INT-002] Order Cancellation Flow (โฟลว์ยกเลิกและคืนสต็อก)
+        │   ├── 1. POST Login (ลูกค้าเข้าสู่ระบบ)
+        │   ├── 2. POST Add to Cart
+        │   ├── 3. POST Create Order (สถานะออเดอร์เป็น PENDING)
+        │   └── 4. POST Cancel Order (ยกเลิกสำเร็จ -> ระบบต้องคืนสต็อกสินค้า)
+        │
+        └── 📁 [INT-004] Race Condition Flow (แย่งกันซื้อของชิ้นสุดท้าย)
+            ├── 1. POST Login (ลูกค้า A)
+            ├── 2. POST Add to Cart (ลูกค้า A หยิบชิ้นสุดท้ายใส่ตะกร้า)
+            ├── 3. POST Login (ลูกค้า B)
+            ├── 4. POST Add to Cart (ลูกค้า B พยายามหยิบของชิ้นเดียวกัน)
+            └── 5. POST Create Order (ลูกค้า B ต้องโดนระบบเด้งออก ฟ้องว่าสต็อกไม่พอ)
