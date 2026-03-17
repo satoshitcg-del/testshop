@@ -1,0 +1,694 @@
+{
+  "info": {
+    "_postman_id": "testshop-api-test-suite",
+    "name": "TestShop API Test Suite",
+    "description": "Comprehensive Postman Test Suite - Integration + E2E Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://testshop-lr30.onrender.com", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "adminToken", "value": "", "type": "string" },
+    { "key": "userEmail", "value": "", "type": "string" },
+    { "key": "productId", "value": "", "type": "string" },
+    { "key": "cartItemId", "value": "", "type": "string" },
+    { "key": "orderId", "value": "", "type": "string" },
+    { "key": "otherUserOrderId", "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+  },
+  "item": [
+    {
+      "name": "01 - Authentication",
+      "item": [
+        {
+          "name": "[AUTH-001] Register Success (Happy Path)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('สมัครสมาชิกสำเร็จ', function() {",
+                  "    pm.expect(pm.response.status).to.equal('Created');",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.success).to.be.true;",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('userEmail', json.data.user.email);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"user{{$randomInt}}@test.com\", \"password\": \"Test123456\", \"fullName\": \"Test User\"}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+          }
+        },
+        {
+          "name": "[AUTH-002] Register Duplicate Email (Error 409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('สมัครซ้ำต้องได้ 409', function() {",
+                  "    pm.expect(pm.response.status).to.equal(409);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.success).to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"duplicate@test.com\", \"password\": \"Test123456\", \"fullName\": \"Duplicate User\"}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+          }
+        },
+        {
+          "name": "[AUTH-004] Register Missing Fields (Error 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('ข้อมูลไม่ครบต้องได้ 400', function() {",
+                  "    pm.expect(pm.response.status).to.equal(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"email\": \"incomplete@test.com\"}" },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+          }
+        },
+        {
+          "name": "[AUTH-005] Login Success (Set Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('เข้าสู่ระบบสำเร็จ', function() {",
+                  "    pm.expect(pm.response.status).to.equal('OK');",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.success).to.be.true;",
+                  "    pm.expect(json.data.accessToken).to.exist;",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json.data.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"email\": \"user1@test.com\", \"password\": \"Test123456\"}" },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "[AUTH-006] Login Invalid Password (Error 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('รหัสผิดต้องได้ 401', function() {",
+                  "    pm.expect(pm.response.status).to.equal(401);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.success).to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"email\": \"user1@test.com\", \"password\": \"WrongPassword\"}" },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "[AUTH-009] Access without Token (Error 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('ไม่ส่ง Token ต้องได้ 401', function() {",
+                  "    pm.expect(pm.response.status).to.equal(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/user/profile", "host": ["{{baseUrl}}"], "path": ["api", "user", "profile"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Products",
+      "item": [
+        {
+          "name": "[PROD-001] Get All Products",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('ดึงสินค้าทั้งหมดสำเร็จ', function() {",
+                  "    pm.expect(pm.response.status).to.equal('OK');",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.success).to.be.true;",
+                  "    pm.expect(json.data.items).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/products", "host": ["{{baseUrl}}"], "path": ["api", "products"] }
+          }
+        },
+        {
+          "name": "[PROD-002] Search Products",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('ค้นหาสินค้าสำเร็จ', function() {",
+                  "    pm.expect(pm.response.status).to.equal('OK');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/products?search=สบู่", "host": ["{{baseUrl}}"], "path": ["api", "products"], "query": [{ "key": "search", "value": "สบู่" }] }
+          }
+        },
+        {
+          "name": "[PROD-003] Get Product Not Found (Error 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('สินค้าไม่มีต้องได้ 404', function() {",
+                  "    pm.expect(pm.response.status).to.equal(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/products/nonexistent-product", "host": ["{{baseUrl}}"], "path": ["api", "products", "nonexistent-product"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Cart",
+      "item": [
+        {
+          "name": "[CART-001] Get Empty Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('ดึงตะกร้าว่างสำเร็จ', function() {",
+                  "    pm.expect(pm.response.status).to.equal('OK');",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.items).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/cart/items", "host": ["{{baseUrl}}"], "path": ["api", "cart", "items"] }
+          }
+        },
+        {
+          "name": "[CART-002] Add Item to Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('เพิ่มสินค้าตะกร้าสำเร็จ', function() {",
+                  "    pm.expect(pm.response.status).to.equal('Created');",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.success).to.be.true;",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('productId', json.data.productId);",
+                  "pm.collectionVariables.set('cartItemId', json.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"productId\": \"prod-008\", \"quantity\": 1}" },
+            "url": { "raw": "{{baseUrl}}/api/cart/items", "host": ["{{baseUrl}}"], "path": ["api", "cart", "items"] }
+          }
+        },
+        {
+          "name": "[CART-004] Add Item Exceeding Stock (Error 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('เพิ่มเกินสต็อกต้องได้ 400', function() {",
+                  "    pm.expect(pm.response.status).to.equal(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"productId\": \"prod-008\", \"quantity\": 9999}" },
+            "url": { "raw": "{{baseUrl}}/api/cart/items", "host": ["{{baseUrl}}"], "path": ["api", "cart", "items"] }
+          }
+        },
+        {
+          "name": "[CART-010] Remove Item from Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('ลบสินค้าตะกร้าสำเร็จ', function() {",
+                  "    pm.expect(pm.response.status).to.equal('OK');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"productId\": \"{{productId}}\"}" },
+            "url": { "raw": "{{baseUrl}}/api/cart/items", "host": ["{{baseUrl}}"], "path": ["api", "cart", "items"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Orders & Payments",
+      "item": [
+        {
+          "name": "[ORD-002] Create Order with Empty Cart (Error 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('สั่งซื้อตะกร้าว่างต้องได้ 400', function() {",
+                  "    pm.expect(pm.response.status).to.equal(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/orders", "host": ["{{baseUrl}}"], "path": ["api", "orders"] }
+          }
+        },
+        {
+          "name": "[ORD-006] Access Other User's Order (Error 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('ดูออเดอร์คนอื่นต้องได้ 403', function() {",
+                  "    pm.expect(pm.response.status).to.equal(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/orders/{{otherUserOrderId}}", "host": ["{{baseUrl}}"], "path": ["api", "orders", "{{otherUserOrderId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Admin Management",
+      "item": [
+        {
+          "name": "[ADMIN-PROD-002] User Access Admin API (Error 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('ลูกค้าเข้า Admin API ต้องโดนบล็อก 403', function() {",
+                  "    pm.expect(pm.response.status).to.equal(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/admin/products", "host": ["{{baseUrl}}"], "path": ["api", "admin", "products"] }
+          }
+        },
+        {
+          "name": "[ADMIN-PROD-003] Admin Create Product Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('แอดมินสร้างสินค้าสำเร็จ', function() {",
+                  "    pm.expect(pm.response.status).to.equal('Created');",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"สินค้าทดสอบ\", \"slug\": \"test-product-{{$randomInt}}\", \"description\": \"สินค้าสำหรับการทดสอบ\", \"price\": 100, \"stockQuantity\": 50}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/admin/products", "host": ["{{baseUrl}}"], "path": ["api", "admin", "products"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Integration & E2E Flows",
+      "item": [
+        {
+          "name": "[INT-001] Complete Purchase Flow",
+          "item": [
+            {
+              "name": "1. POST Login (ลูกค้าเข้าสู่ระบบ)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Login สำเร็จ', function() {",
+                      "    pm.expect(pm.response.status).to.equal('OK');",
+                      "});",
+                      "pm.collectionVariables.set('accessToken', pm.response.json().data.accessToken);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\"email\": \"e2euser@test.com\", \"password\": \"Test123456\"}" },
+                "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+              }
+            },
+            {
+              "name": "2. DELETE Clear Cart (ล้างตะกร้า)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": ["pm.test('ล้างตะกร้าสำเร็จ', function() { pm.expect(pm.response.status).to.equal('OK'); });"]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\"clearAll\": true}" },
+                "url": { "raw": "{{baseUrl}}/api/cart/items", "host": ["{{baseUrl}}"], "path": ["api", "cart", "items"] }
+              }
+            },
+            {
+              "name": "3. GET Search Products (ค้นหาสินค้า)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('ค้นหาสินค้าสำเร็จ', function() {",
+                      "    pm.expect(pm.response.status).to.equal('OK');",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "if (json.data.items.length > 0) {",
+                      "    pm.collectionVariables.set('productId', json.data.items[0].id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/products?search=สบู่", "host": ["{{baseUrl}}"], "path": ["api", "products"], "query": [{ "key": "search", "value": "สบู่" }] }
+              }
+            },
+            {
+              "name": "4. POST Add to Cart (ใส่ตะกร้า)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('เพิ่มตะกร้าสำเร็จ', function() {",
+                      "    pm.expect(pm.response.status).to.equal('Created');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\"productId\": \"{{productId}}\", \"quantity\": 1}" },
+                "url": { "raw": "{{baseUrl}}/api/cart/items", "host": ["{{baseUrl}}"], "path": ["api", "cart", "items"] }
+              }
+            },
+            {
+              "name": "5. POST Create Order (ยืนยันคำสั่งซื้อ)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('สร้างคำสั่งซื้อสำเร็จ', function() {",
+                      "    pm.expect(pm.response.status).to.equal('Created');",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.success).to.be.true;",
+                      "});",
+                      "pm.collectionVariables.set('orderId', pm.response.json().data.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/orders", "host": ["{{baseUrl}}"], "path": ["api", "orders"] }
+              }
+            },
+            {
+              "name": "6. POST Create Payment Intent (ชำระเงิน)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('สร้างการชำระเงินสำเร็จ', function() {",
+                      "    pm.expect(pm.response.status).to.be.oneOf(['OK', 'Created']);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\"orderId\": \"{{orderId}}\", \"paymentMethod\": \"card\"}" },
+                "url": { "raw": "{{baseUrl}}/api/payments/intent", "host": ["{{baseUrl}}"], "path": ["api", "payments", "intent"] }
+              }
+            }
+          ]
+        },
+        {
+          "name": "[INT-002] Order Cancellation Flow",
+          "item": [
+            {
+              "name": "1. POST Login",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\"email\": \"canceluser@test.com\", \"password\": \"Test123456\"}" },
+                "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+              }
+            },
+            {
+              "name": "2. POST Add to Cart",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\"productId\": \"prod-008\", \"quantity\": 1}" },
+                "url": { "raw": "{{baseUrl}}/api/cart/items", "host": ["{{baseUrl}}"], "path": ["api", "cart", "items"] }
+              }
+            },
+            {
+              "name": "3. POST Create Order",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('สร้างออเดอร์สำเร็จ', function() { pm.expect(pm.response.status).to.equal('Created'); });",
+                      "pm.collectionVariables.set('orderId', pm.response.json().data.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/orders", "host": ["{{baseUrl}}"], "path": ["api", "orders"] }
+              }
+            },
+            {
+              "name": "4. POST Cancel Order (คืนสต็อก)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('ยกเลิกออเดอร์สำเร็จ + คืนสต็อก', function() {",
+                      "    pm.expect(pm.response.status).to.equal('OK');",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data.status).to.equal('CANCELLED');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/orders/{{orderId}}/cancel", "host": ["{{baseUrl}}"], "path": ["api", "orders", "{{orderId}}", "cancel"] }
+              }
+            }
+          ]
+        },
+        {
+          "name": "[INT-004] Race Condition Flow (ซื้อของชิ้นสุดท้าย)",
+          "item": [
+            {
+              "name": "1. POST Login (ลูกค้า A)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": ["pm.collectionVariables.set('accessToken', pm.response.json().data.accessToken);"]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\"email\": \"racetest1@test.com\", \"password\": \"Test123456\"}" },
+                "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+              }
+            },
+            {
+              "name": "2. POST Add to Cart (ลูกค้า A หยิบชิ้นสุดท้าย)",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\"productId\": \"prod-001\", \"quantity\": 1}" },
+                "url": { "raw": "{{baseUrl}}/api/cart/items", "host": ["{{baseUrl}}"], "path": ["api", "cart", "items"] }
+              }
+            },
+            {
+              "name": "3. POST Login (ลูกค้า B)",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\"email\": \"racetest2@test.com\", \"password\": \"Test123456\"}" },
+                "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+              }
+            },
+            {
+              "name": "4. POST Add to Cart (ลูกค้า B พยายามหยิบชิ้นเดียวกัน)",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\"productId\": \"prod-001\", \"quantity\": 1}" },
+                "url": { "raw": "{{baseUrl}}/api/cart/items", "host": ["{{baseUrl}}"], "path": ["api", "cart", "items"] }
+              }
+            },
+            {
+              "name": "5. POST Create Order (ลูกค้า B ต้องโดนเด้ง - สต็อกไม่พอ)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('สต็อกไม่พอต้องได้ 400', function() {",
+                      "    pm.expect(pm.response.status).to.equal(400);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/orders", "host": ["{{baseUrl}}"], "path": ["api", "orders"] }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
