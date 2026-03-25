@@ -2,13 +2,14 @@
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = getUserFromRequest(req);
     if (!user) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
     const order = await prisma.order.findFirst({
-      where: { id: params.id, userId: user.id },
+      where: { id, userId: user.id },
       include: { items: true },
     });
 

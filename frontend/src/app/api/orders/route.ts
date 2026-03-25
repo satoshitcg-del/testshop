@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
+import type { Order, OrderItem } from "@prisma/client";
 
-function normalizeOrder(order: any) {
+type OrderWithItems = Order & {
+  items: OrderItem[];
+};
+
+function normalizeOrder(order: OrderWithItems) {
   return {
     ...order,
     subtotal: Number(order.subtotal),
     totalAmount: Number(order.totalAmount),
-    items: order.items.map((i: any) => ({
+    items: order.items.map((i) => ({
       ...i,
       price: Number(i.price),
       subtotal: Number(i.subtotal),

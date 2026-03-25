@@ -1,9 +1,10 @@
 ﻿import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(_: Request, { params }: { params: { slug: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ slug: string }> }) {
   try {
-    const product = await prisma.product.findUnique({ where: { slug: params.slug } });
+    const { slug } = await params;
+    const product = await prisma.product.findUnique({ where: { slug } });
     if (!product) {
       return NextResponse.json({ success: false, error: "Product not found" }, { status: 404 });
     }

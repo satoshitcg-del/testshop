@@ -1,12 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
+import type { Cart, CartItem, Product } from "@prisma/client";
 
-function normalizeCart(cart: any) {
+type CartWithItems = Cart & {
+  items: (CartItem & {
+    product: Product | null;
+  })[];
+};
+
+function normalizeCart(cart: CartWithItems | null) {
   if (!cart) return null;
   return {
     ...cart,
-    items: cart.items.map((i: any) => ({
+    items: cart.items.map((i) => ({
       ...i,
       priceAtTime: Number(i.priceAtTime),
       product: i.product

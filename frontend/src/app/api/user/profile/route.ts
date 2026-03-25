@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
 import bcrypt from "bcryptjs";
+import { MIN_PASSWORD_LENGTH } from "@/lib/constants";
 
 // GET /api/user/profile - ดูโปรไฟล์ตัวเอง
 export async function GET(req: Request) {
@@ -56,7 +57,7 @@ export async function PATCH(req: Request) {
     const body = await req.json();
     const { fullName, currentPassword, newPassword } = body;
 
-    const updateData: any = {};
+    const updateData: { fullName?: string; passwordHash?: string } = {};
 
     // Update full name
     if (fullName) {
@@ -88,9 +89,9 @@ export async function PATCH(req: Request) {
         );
       }
 
-      if (newPassword.length < 6) {
+      if (newPassword.length < MIN_PASSWORD_LENGTH) {
         return NextResponse.json(
-          { success: false, error: "New password must be at least 6 characters" },
+          { success: false, error: `รหัสผ่านต้องมีอย่างน้อย ${MIN_PASSWORD_LENGTH} ตัวอักษร` },
           { status: 400 }
         );
       }

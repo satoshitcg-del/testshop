@@ -5,13 +5,14 @@ import { requireAdmin } from "@/middleware/admin";
 // GET /api/admin/products/:id - ดูรายละเอียดสินค้า (admin view)
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const admin = requireAdmin(req);
   if (admin instanceof NextResponse) return admin;
 
   const product = await prisma.product.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   if (!product) {
@@ -30,8 +31,9 @@ export async function GET(
 // PUT /api/admin/products/:id - แก้ไขสินค้า
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const admin = requireAdmin(req);
   if (admin instanceof NextResponse) return admin;
 
@@ -41,7 +43,7 @@ export async function PUT(
 
     // Check if product exists
     const existing = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existing) {
@@ -65,7 +67,7 @@ export async function PUT(
     }
 
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(name && { name }),
         ...(slug && { slug }),
@@ -91,15 +93,16 @@ export async function PUT(
 // DELETE /api/admin/products/:id - ลบสินค้า
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const admin = requireAdmin(req);
   if (admin instanceof NextResponse) return admin;
 
   try {
     // Check if product exists
     const existing = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existing) {
@@ -111,10 +114,10 @@ export async function DELETE(
 
     // Check if product is in any cart or order
     const inCart = await prisma.cartItem.findFirst({
-      where: { productId: params.id },
+      where: { productId: id },
     });
     const inOrder = await prisma.orderItem.findFirst({
-      where: { productId: params.id },
+      where: { productId: id },
     });
 
     if (inCart || inOrder) {
@@ -128,7 +131,7 @@ export async function DELETE(
     }
 
     await prisma.product.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({

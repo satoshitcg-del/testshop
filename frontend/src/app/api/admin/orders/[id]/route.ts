@@ -5,13 +5,14 @@ import { requireAdmin } from "@/middleware/admin";
 // GET /api/admin/orders/:id - ดูรายละเอียดออเดอร์
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const admin = requireAdmin(req);
   if (admin instanceof NextResponse) return admin;
 
   const order = await prisma.order.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       items: {
         include: {
@@ -59,8 +60,9 @@ export async function GET(
 // PATCH /api/admin/orders/:id - อัพเดทสถานะออเดอร์
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const admin = requireAdmin(req);
   if (admin instanceof NextResponse) return admin;
 
@@ -87,7 +89,7 @@ export async function PATCH(
     }
 
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!order) {
@@ -98,7 +100,7 @@ export async function PATCH(
     }
 
     const updatedOrder = await prisma.order.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(status && { status }),
         ...(paymentStatus && { paymentStatus }),

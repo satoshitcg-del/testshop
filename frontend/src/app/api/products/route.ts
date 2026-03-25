@@ -1,7 +1,8 @@
 ﻿import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type { Product } from "@prisma/client";
 
-function normalizeProduct(p: any) {
+function normalizeProduct(p: Product) {
   return {
     ...p,
     price: Number(p.price),

@@ -2,8 +2,19 @@
 import { prisma } from "@/lib/prisma";
 import { issueToken, isValidEmail } from "@/lib/auth";
 import bcrypt from "bcryptjs";
+import { rateLimit, getClientIP } from "@/lib/rateLimit";
 
 export async function POST(req: Request) {
+  // Rate limiting
+  const ip = getClientIP(req);
+  const { allowed, remaining, resetIn } = rateLimit(ip);
+  if (!allowed) {
+    return NextResponse.json(
+      { success: false, error: "Too many requests. Please try again later.", resetIn },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(resetIn / 1000)) } }
+    );
+  }
+
   try {
     const body = await req.json();
     const { email, password } = body || {};
