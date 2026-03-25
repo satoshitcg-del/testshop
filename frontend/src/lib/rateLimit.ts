@@ -4,7 +4,7 @@
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
 const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-const MAX_REQUESTS = 5; // 5 requests per window
+const MAX_REQUESTS = 100; // 100 requests per window
 
 export function rateLimit(ip: string): { allowed: boolean; remaining: number; resetIn: number } {
   const now = Date.now();
