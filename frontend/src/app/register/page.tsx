@@ -140,14 +140,16 @@ export default function RegisterPage() {
               <label className="mb-1.5 block text-sm font-medium text-slate-700">
                 ชื่อ-นามสกุล
               </label>
-              <div className="relative">
-                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <div className="flex items-center">
+                <div className="relative flex-shrink-0">
+                  <UserIcon className="h-5 w-5 text-slate-400" />
+                </div>
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="ชื่อ นามสกุล"
-                  className="input pl-10"
+                  className="input ml-3 flex-1"
                 />
               </div>
             </div>
@@ -157,14 +159,16 @@ export default function RegisterPage() {
               <label className="mb-1.5 block text-sm font-medium text-slate-700">
                 อีเมล
               </label>
-              <div className="relative">
-                <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <div className="flex items-center">
+                <div className="relative flex-shrink-0">
+                  <EnvelopeIcon className="h-5 w-5 text-slate-400" />
+                </div>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="input pl-10"
+                  className="input ml-3 flex-1"
                 />
               </div>
             </div>
@@ -174,19 +178,21 @@ export default function RegisterPage() {
               <label className="mb-1.5 block text-sm font-medium text-slate-700">
                 รหัสผ่าน
               </label>
-              <div className="relative">
-                <LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <div className="flex items-center">
+                <div className="relative flex-shrink-0">
+                  <LockClosedIcon className="h-5 w-5 text-slate-400" />
+                </div>
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="input pl-10 pr-10"
+                  className="input ml-3 pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 inset-y-0 my-auto text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 text-slate-400 hover:text-slate-600"
                 >
                   {showPassword ? (
                     <EyeSlashIcon className="h-5 w-5" />
