@@ -1,9 +1,12 @@
 ﻿import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET environment variable is required");
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET environment variable is required");
+  }
+  return secret;
 }
 
 export type AuthUser = {
@@ -14,7 +17,7 @@ export type AuthUser = {
 };
 
 export function issueToken(payload: AuthUser) {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: "7d" });
 }
 
 export function getUserFromRequest(req: Request): AuthUser | null {
@@ -22,7 +25,7 @@ export function getUserFromRequest(req: Request): AuthUser | null {
   const token = auth?.replace("Bearer ", "");
   if (!token) return null;
   try {
-    return jwt.verify(token, JWT_SECRET) as AuthUser;
+    return jwt.verify(token, getJwtSecret()) as AuthUser;
   } catch {
     return null;
   }
