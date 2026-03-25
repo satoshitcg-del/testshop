@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(ls -la \"D:\\\\Users\\\\nuttawat.jun\\\\AppData\\\\Local\\\\Temp\\\\1\\\\claude\\\\d--Users-nuttawat-jun-Documents-GitHub-testshop\\\\f790ad92-a13b-400e-a8b2-c68cf5459293\\\\tasks\"\" 2>/dev/null || echo \"Directory not found \")",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(find d:Usersnuttawat.junDocumentsGitHubtestshop -maxdepth 3 -name *.config.* -o -name *.env*)",
+      "Bash(find d:Usersnuttawat.junDocumentsGitHubtestshopfrontendsrclib -type f -name *.ts -o -name *.tsx)",
+      "Bash(find d:Usersnuttawat.junDocumentsGitHubtestshopfrontendsrcapp -maxdepth 1 -type f -name *.ts -o -name *.tsx)",
+      "WebFetch(domain:github.com)",
+      "Bash(/plugin marketplace:*)",
+      "Bash(claude /plugin marketplace add alirezarezvani/claude-skills)"
     ]
   }
 }
