@@ -163,14 +163,14 @@ export default function ProductsPage() {
             มีสินค้าทั้งหมด <span className="font-semibold text-indigo-600">{filteredItems.length}</span> รายการ
           </p>
         </div>
-        <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+        <div className="relative w-full sm:w-72">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
           <input
             type="text"
             placeholder="ค้นหาสินค้า..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="input pl-10 w-full sm:w-72"
+            className="input pl-10 w-full"
           />
         </div>
       </div>
