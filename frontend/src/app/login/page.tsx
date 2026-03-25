@@ -117,7 +117,7 @@ export default function LoginPage() {
                 อีเมล
               </label>
               <div className="relative">
-                <EnvelopeIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <EnvelopeIcon className="absolute left-3 inset-y-0 my-auto h-5 w-5 text-slate-400" />
                 <input
                   type="email"
                   value={email}
@@ -134,7 +134,7 @@ export default function LoginPage() {
                 รหัสผ่าน
               </label>
               <div className="relative">
-                <LockClosedIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <LockClosedIcon className="absolute left-3 inset-y-0 my-auto h-5 w-5 text-slate-400" />
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
@@ -145,7 +145,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 inset-y-0 my-auto text-slate-400 hover:text-slate-600"
                 >
                   {showPassword ? (
                     <EyeSlashIcon className="h-5 w-5" />
