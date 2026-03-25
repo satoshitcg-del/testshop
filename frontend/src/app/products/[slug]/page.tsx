@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
 
 // Icons
 function ShoppingBagIcon({ className }: { className?: string }) {
@@ -99,7 +100,9 @@ export default function ProductDetailPage() {
     fetch(`/api/products/${slug}`)
       .then((res) => res.json())
       .then((data) => {
-        setProduct(data.data);
+        if (data.success && data.data) {
+          setProduct(data.data);
+        }
         setLoading(false);
       })
       .catch(() => {
@@ -224,7 +227,7 @@ export default function ProductDetailPage() {
           <div className="mt-6 space-y-3">
             <div className="flex items-center gap-3 text-sm text-slate-600">
               <TruckIcon className="h-5 w-5 text-emerald-500" />
-              <span>จัดส่งฟรีเมื่อสั่งซื้อเกิน ฿500</span>
+              <span>จัดส่งฟรีเมื่อสั่งซื้อเกิน ฿{FREE_SHIPPING_THRESHOLD.toLocaleString()}</span>
             </div>
             <div className="flex items-center gap-3 text-sm text-slate-600">
               <ShieldCheckIcon className="h-5 w-5 text-emerald-500" />

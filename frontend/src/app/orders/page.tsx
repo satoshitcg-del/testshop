@@ -97,10 +97,15 @@ export default function OrdersPage() {
     fetch("/api/orders", { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => res.json())
       .then((data) => {
-        setOrders(data.data.items || []);
+        if (data.success && Array.isArray(data.data?.items)) {
+          setOrders(data.data.items);
+        } else {
+          setOrders([]);
+        }
         setLoading(false);
       })
       .catch(() => {
+        setOrders([]);
         setLoading(false);
       });
   }, []);

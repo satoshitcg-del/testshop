@@ -5,36 +5,41 @@ import bcrypt from "bcryptjs";
 
 // GET /api/user/profile - ดูโปรไฟล์ตัวเอง
 export async function GET(req: Request) {
-  const user = getUserFromRequest(req);
-  if (!user) {
-    return NextResponse.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 }
-    );
+  try {
+    const user = getUserFromRequest(req);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const userData = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    if (!userData) {
+      return NextResponse.json(
+        { success: false, error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: userData,
+    });
+  } catch (error) {
+    console.error("GET /api/user/profile error:", error);
+    return NextResponse.json({ success: false, error: "Failed to fetch profile" }, { status: 500 });
   }
-
-  const userData = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: {
-      id: true,
-      email: true,
-      fullName: true,
-      role: true,
-      createdAt: true,
-    },
-  });
-
-  if (!userData) {
-    return NextResponse.json(
-      { success: false, error: "User not found" },
-      { status: 404 }
-    );
-  }
-
-  return NextResponse.json({
-    success: true,
-    data: userData,
-  });
 }
 
 // PATCH /api/user/profile - แก้ไขโปรไฟล์

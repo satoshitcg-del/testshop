@@ -73,12 +73,16 @@ export default function ProductsPage() {
     fetch("/api/products")
       .then((res) => res.json())
       .then((data) => {
-        setItems(data.data.items);
-        setFilteredItems(data.data.items);
+        if (data.success && Array.isArray(data.data?.items)) {
+          setItems(data.data.items);
+          setFilteredItems(data.data.items);
+        } else {
+          setError(data.error || "โหลดสินค้าไม่สำเร็จ");
+        }
         setLoading(false);
       })
       .catch(() => {
-        setError("โหลดสินค้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+        setError("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
         setLoading(false);
       });
   }, []);

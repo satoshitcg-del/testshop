@@ -40,7 +40,7 @@ Authorization: Bearer <admin_token>
 ### Authentication
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/auth/register` | Register new account |
+| POST | `/api/auth/register` | Register new account (password min 8 chars) |
 | POST | `/api/auth/login` | Login and get token |
 | POST | `/api/auth/logout` | Logout |
 
@@ -125,6 +125,19 @@ Authorization: Bearer <admin_token>
   "error": "Error message"
 }
 ```
+
+## ⚠️ Error Handling
+
+All endpoints return consistent error responses:
+
+| Status Code | Description |
+|-------------|-------------|
+| 400 | Validation error (invalid input, missing fields) |
+| 401 | Unauthorized (missing or invalid token) |
+| 403 | Forbidden (non-admin accessing admin endpoints) |
+| 404 | Resource not found |
+| 409 | Conflict (e.g., email already exists) |
+| 500 | Internal server error |
 
 ## 🔄 Order Status Flow
 

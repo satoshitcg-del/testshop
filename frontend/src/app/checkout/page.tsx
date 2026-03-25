@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from "@/lib/constants";
 
 // Icons
 function CreditCardIcon({ className }: { className?: string }) {
@@ -44,19 +45,60 @@ function ExclamationCircleIcon({ className }: { className?: string }) {
   );
 }
 
+type CartItem = {
+  id: string;
+  productId: string;
+  quantity: number;
+  priceAtTime: number;
+  product?: {
+    name: string;
+    price: number;
+  } | null;
+};
+
+type Cart = {
+  userId: string;
+  items: CartItem[];
+};
+
 export default function CheckoutPage() {
-  const [loading, setLoading] = useState(false);
+  const [cart, setCart] = useState<Cart | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    fetch("/api/cart/items", { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setCart(data.data);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
+  }, []);
 
   const handleCheckout = async () => {
     if (!token) {
       setMessage("กรุณาเข้าสู่ระบบก่อน");
       return;
     }
-    setLoading(true);
+    if (!cart || cart.items.length === 0) {
+      setMessage("ตะกร้าว่างเปล่า");
+      return;
+    }
+    setProcessing(true);
     setMessage(null);
 
     try {
@@ -65,10 +107,10 @@ export default function CheckoutPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const orderData = await orderRes.json();
-      
+
       if (!orderData.success) {
         setMessage(orderData.error || "สร้างออเดอร์ไม่สำเร็จ");
-        setLoading(false);
+        setProcessing(false);
         return;
       }
 
@@ -94,9 +136,13 @@ export default function CheckoutPage() {
     } catch {
       setMessage("เกิดข้อผิดพลาด กรุณาลองใหม่");
     } finally {
-      setLoading(false);
+      setProcessing(false);
     }
   };
+
+  const subtotal = cart ? cart.items.reduce((sum, i) => sum + i.priceAtTime * i.quantity, 0) : 0;
+  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+  const total = subtotal + shipping;
 
   if (success) {
     return (
@@ -122,6 +168,53 @@ export default function CheckoutPage() {
               ช้อปต่อ
             </Link>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+          <p className="text-slate-600">กำลังโหลด...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!token) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-amber-100">
+            <ShoppingBagIcon className="h-10 w-10 text-amber-600" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900">กรุณาเข้าสู่ระบบ</h2>
+          <p className="mt-2 text-slate-600">เพื่อดำเนินการชำระเงิน</p>
+          <Link href="/login" className="btn btn-primary mt-6">
+            เข้าสู่ระบบ
+            <ArrowRightIcon className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!cart || cart.items.length === 0) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
+            <ShoppingBagIcon className="h-10 w-10 text-slate-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900">ตะกร้าว่างเปล่า</h2>
+          <p className="mt-2 text-slate-600">เพิ่มสินค้าลงตะกร้าก่อนชำระเงิน</p>
+          <Link href="/products" className="btn btn-primary mt-6">
+            <ShoppingBagIcon className="h-4 w-4" />
+            ดูสินค้า
+          </Link>
         </div>
       </div>
     );
@@ -196,20 +289,27 @@ export default function CheckoutPage() {
         <div className="lg:col-span-1">
           <div className="card sticky top-24">
             <h2 className="text-lg font-semibold text-slate-900 mb-4">สรุปคำสั่งซื้อ</h2>
-            
+
             <div className="space-y-3 text-sm">
               <div className="flex justify-between text-slate-600">
-                <span>ราคาสินค้า</span>
-                <span>ตามยอดในตะกร้า</span>
+                <span>ยอดรวมสินค้า ({cart.items.length} รายการ)</span>
+                <span>฿{subtotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>ค่าจัดส่ง</span>
-                <span className="text-emerald-600">ฟรี</span>
+                <span className={shipping === 0 ? "text-emerald-600" : ""}>
+                  {shipping === 0 ? "ฟรี" : `฿${shipping}`}
+                </span>
               </div>
+              {shipping > 0 && (
+                <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-700">
+                  เพิ่มอีก ฿{(FREE_SHIPPING_THRESHOLD - subtotal).toLocaleString()} เพื่อรับส่งฟรี!
+                </div>
+              )}
               <div className="border-t border-slate-200 pt-3">
                 <div className="flex justify-between text-lg font-bold">
                   <span>ยอดรวมทั้งหมด</span>
-                  <span className="text-indigo-600">จากตะกร้า</span>
+                  <span className="text-indigo-600">฿{total.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -222,10 +322,10 @@ export default function CheckoutPage() {
 
             <button
               onClick={handleCheckout}
-              disabled={loading}
+              disabled={processing}
               className="btn btn-primary w-full mt-4"
             >
-              {loading ? (
+              {processing ? (
                 <>
                   <div className="spinner" />
                   กำลังดำเนินการ...

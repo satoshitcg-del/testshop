@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"D:\\\\Users\\\\nuttawat.jun\\\\AppData\\\\Local\\\\Temp\\\\1\\\\claude\\\\d--Users-nuttawat-jun-Documents-GitHub-testshop\\\\f790ad92-a13b-400e-a8b2-c68cf5459293\\\\tasks\"\" 2>/dev/null || echo \"Directory not found \")",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}

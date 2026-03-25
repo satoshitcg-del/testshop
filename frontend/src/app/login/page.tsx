@@ -55,8 +55,8 @@ function ShoppingBagIcon({ className }: { className?: string }) {
 }
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("customer@test.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);

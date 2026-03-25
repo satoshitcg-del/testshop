@@ -175,7 +175,7 @@ paths:
                   example: user@example.com
                 password:
                   type: string
-                  minLength: 6
+                  minLength: 8
                   example: password123
                 fullName:
                   type: string
@@ -198,8 +198,20 @@ paths:
                             type: string
                           expiresIn:
                             type: integer
+        '400':
+          description: Validation error (weak password or invalid email)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '409':
           description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
           content:
             application/json:
               schema:
@@ -241,8 +253,20 @@ paths:
                             type: string
                           expiresIn:
                             type: integer
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
           content:
             application/json:
               schema:
@@ -278,6 +302,12 @@ paths:
                         $ref: '#/components/schemas/User'
         '401':
           description: Unauthorized
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
     patch:
       tags: [User]
@@ -302,6 +332,12 @@ paths:
           description: Profile updated
         '400':
           description: Invalid current password or validation error
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   # Products (Public)
   /api/products:
@@ -330,6 +366,12 @@ paths:
                             type: array
                             items:
                               $ref: '#/components/schemas/Product'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/products/{slug}:
     get:
@@ -354,6 +396,12 @@ paths:
                         $ref: '#/components/schemas/Product'
         '404':
           description: Product not found
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   # Cart
   /api/cart/items:
@@ -373,6 +421,14 @@ paths:
                   - properties:
                       data:
                         $ref: '#/components/schemas/Cart'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
     post:
       tags: [Cart]
@@ -398,7 +454,17 @@ paths:
         '200':
           description: Item added
         '400':
-          description: Insufficient stock
+          description: Insufficient stock or validation error
+        '401':
+          description: Unauthorized
+        '404':
+          description: Product not found
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
     patch:
       tags: [Cart]
@@ -421,6 +487,18 @@ paths:
       responses:
         '200':
           description: Cart updated
+        '400':
+          description: Validation error
+        '401':
+          description: Unauthorized
+        '404':
+          description: Item not found
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
     delete:
       tags: [Cart]
@@ -440,6 +518,18 @@ paths:
       responses:
         '200':
           description: Item removed
+        '400':
+          description: Missing itemId
+        '401':
+          description: Unauthorized
+        '404':
+          description: Item not found
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   # Orders
   /api/orders:
@@ -464,6 +554,14 @@ paths:
                             type: array
                             items:
                               $ref: '#/components/schemas/Order'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
     post:
       tags: [Orders]
@@ -484,6 +582,14 @@ paths:
                         $ref: '#/components/schemas/Order'
         '400':
           description: Cart empty or insufficient stock
+        '401':
+          description: Unauthorized
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/orders/{id}:
     get:
@@ -500,8 +606,16 @@ paths:
       responses:
         '200':
           description: Order details
+        '401':
+          description: Unauthorized
         '404':
           description: Order not found
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/orders/{id}/cancel:
     post:
@@ -521,6 +635,16 @@ paths:
           description: Order cancelled
         '400':
           description: Cannot cancel (already paid or wrong status)
+        '401':
+          description: Unauthorized
+        '404':
+          description: Order not found
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   # Payments
   /api/payments/intent:
@@ -553,6 +677,18 @@ paths:
                         properties:
                           clientSecret:
                             type: string
+        '400':
+          description: Missing orderId
+        '401':
+          description: Unauthorized
+        '404':
+          description: Order not found
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   # Admin - Products
   /api/admin/products:
@@ -564,8 +700,16 @@ paths:
       responses:
         '200':
           description: All products
+        '401':
+          description: Unauthorized
         '403':
           description: Not admin
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
     post:
       tags: [Admin - Products]
@@ -596,8 +740,18 @@ paths:
       responses:
         '200':
           description: Product created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not admin
         '409':
           description: Slug already exists
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/admin/products/{id}:
     get:
@@ -614,6 +768,16 @@ paths:
       responses:
         '200':
           description: Product details
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not admin
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
     put:
       tags: [Admin - Products]
@@ -645,6 +809,18 @@ paths:
       responses:
         '200':
           description: Product updated
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not admin
+        '404':
+          description: Product not found
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
     delete:
       tags: [Admin - Products]
@@ -663,6 +839,16 @@ paths:
           description: Product deleted
         '400':
           description: Cannot delete (product in use)
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not admin
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   # Admin - Orders
   /api/admin/orders:
@@ -714,6 +900,16 @@ paths:
                                 type: integer
                               totalPages:
                                 type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not admin
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/admin/orders/{id}:
     get:
@@ -730,6 +926,18 @@ paths:
       responses:
         '200':
           description: Order with user details
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not admin
+        '404':
+          description: Order not found
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
     patch:
       tags: [Admin - Orders]
@@ -757,6 +965,18 @@ paths:
       responses:
         '200':
           description: Order status updated
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not admin
+        '404':
+          description: Order not found
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   # Admin - Stats
   /api/admin/stats:
@@ -811,3 +1031,13 @@ paths:
                                 type: integer
                               cancelled:
                                 type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not admin
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

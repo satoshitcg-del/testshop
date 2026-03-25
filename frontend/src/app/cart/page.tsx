@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from "@/lib/constants";
 
 // Icons
 function ShoppingBagIcon({ className }: { className?: string }) {
@@ -108,7 +109,7 @@ export default function CartPage() {
     if (!token || quantity < 1) return;
     setUpdatingId(itemId);
     try {
-      await fetch("/api/cart/items", {
+      const res = await fetch("/api/cart/items", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -116,7 +117,14 @@ export default function CartPage() {
         },
         body: JSON.stringify({ itemId, quantity }),
       });
-      loadCart();
+      const data = await res.json();
+      if (data.success && data.data) {
+        setCart(data.data);
+      } else {
+        alert(data.error || "อัปเดตจำนวนไม่สำเร็จ");
+      }
+    } catch {
+      alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
     } finally {
       setUpdatingId(null);
     }
@@ -125,9 +133,9 @@ export default function CartPage() {
   const removeItem = async (itemId: string) => {
     if (!token) return;
     if (!confirm("ต้องการลบสินค้านี้ออกจากตะกร้า?")) return;
-    
+
     try {
-      await fetch("/api/cart/items", {
+      const res = await fetch("/api/cart/items", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -135,9 +143,14 @@ export default function CartPage() {
         },
         body: JSON.stringify({ itemId }),
       });
-      loadCart();
+      const data = await res.json();
+      if (data.success && data.data) {
+        setCart(data.data);
+      } else {
+        alert(data.error || "ลบสินค้าไม่สำเร็จ");
+      }
     } catch {
-      alert("ลบสินค้าไม่สำเร็จ");
+      alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
     }
   };
 
@@ -189,7 +202,7 @@ export default function CartPage() {
   }
 
   const subtotal = cart.items.reduce((sum, i) => sum + i.priceAtTime * i.quantity, 0);
-  const shipping = subtotal >= 500 ? 0 : 50;
+  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
   const total = subtotal + shipping;
 
   return (
@@ -288,7 +301,7 @@ export default function CartPage() {
               </div>
               {shipping > 0 && (
                 <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-700">
-                  เพิ่มอีก ฿{(500 - subtotal).toLocaleString()} เพื่อรับส่งฟรี!
+                  เพิ่มอีก ฿{(FREE_SHIPPING_THRESHOLD - subtotal).toLocaleString()} เพื่อรับส่งฟรี!
                 </div>
               )}
               <div className="border-t border-slate-200 pt-3">

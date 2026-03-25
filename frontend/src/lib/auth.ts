@@ -1,4 +1,5 @@
 ﻿import jwt from "jsonwebtoken";
+import { NextResponse } from "next/server";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 
@@ -22,4 +23,20 @@ export function getUserFromRequest(req: Request): AuthUser | null {
   } catch {
     return null;
   }
+}
+
+// Email validation regex
+export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function isValidEmail(email: string): boolean {
+  return EMAIL_REGEX.test(email);
+}
+
+// Generic API error handler
+export function handleApiError(error: unknown, fallbackMessage: string = "An error occurred"): NextResponse {
+  console.error("API Error:", error);
+  return NextResponse.json(
+    { success: false, error: fallbackMessage },
+    { status: 500 }
+  );
 }
